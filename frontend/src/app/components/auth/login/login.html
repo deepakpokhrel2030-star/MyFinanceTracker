@@ -1,0 +1,57 @@
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-light">
+  <div class="card shadow-sm border-0 p-4" style="width:100%;max-width:420px;">
+
+    <div class="text-center mb-4">
+      <i class="bi bi-wallet2 text-primary" style="font-size:2.5rem;"></i>
+      <h4 class="fw-semibold mt-2 mb-1">Welcome back</h4>
+      <p class="text-muted small mb-0">Sign in to your finance dashboard</p>
+    </div>
+
+    <div *ngIf="error" class="alert alert-danger py-2 small">
+      <i class="bi bi-exclamation-circle me-1"></i>{{ error }}
+    </div>
+
+    <form (ngSubmit)="onSubmit()">
+      <div class="mb-3">
+        <label class="form-label small fw-medium">Email address</label>
+        <input
+          type="email"
+          class="form-control"
+          placeholder="you@example.com"
+          [(ngModel)]="email"
+          name="email"
+          required
+          autofocus
+        />
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label small fw-medium">Password</label>
+        <input
+          type="password"
+          class="form-control"
+          placeholder="Enter your password"
+          [(ngModel)]="password"
+          name="password"
+          required
+        />
+      </div>
+
+      <button
+        type="submit"
+        class="btn btn-primary w-100"
+        [disabled]="loading || !email || !password"
+      >
+        <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+        {{ loading ? 'Signing in...' : 'Sign in' }}
+      </button>
+    </form>
+
+    <hr class="my-4">
+    <p class="text-center text-muted small mb-0">
+      Don't have an account?
+      <a routerLink="/register" class="text-primary text-decoration-none fw-medium">Create one</a>
+    </p>
+
+  </div>
+</div>

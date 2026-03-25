@@ -1,0 +1,88 @@
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-light">
+  <div class="card shadow-sm border-0 p-4" style="width:100%;max-width:440px;">
+
+    <div class="text-center mb-4">
+      <i class="bi bi-wallet2 text-primary" style="font-size:2.5rem;"></i>
+      <h4 class="fw-semibold mt-2 mb-1">Create your account</h4>
+      <p class="text-muted small mb-0">Start tracking your finances today</p>
+    </div>
+
+    <div *ngIf="error" class="alert alert-danger py-2 small">
+      <i class="bi bi-exclamation-circle me-1"></i>{{ error }}
+    </div>
+    <div *ngIf="success" class="alert alert-success py-2 small">
+      <i class="bi bi-check-circle me-1"></i>{{ success }}
+    </div>
+
+    <form (ngSubmit)="onSubmit()">
+      <div class="mb-3">
+        <label class="form-label small fw-medium">Full name</label>
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Your full name"
+          [(ngModel)]="name"
+          name="name"
+          required
+          autofocus
+        />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-medium">Email address</label>
+        <input
+          type="email"
+          class="form-control"
+          placeholder="you@example.com"
+          [(ngModel)]="email"
+          name="email"
+          required
+        />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-medium">Password</label>
+        <input
+          type="password"
+          class="form-control"
+          [class.is-invalid]="password.length > 0 && password.length < 6"
+          placeholder="At least 6 characters"
+          [(ngModel)]="password"
+          name="password"
+          required
+        />
+        <div class="invalid-feedback">Password must be at least 6 characters.</div>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label small fw-medium">Confirm password</label>
+        <input
+          type="password"
+          class="form-control"
+          [class.is-invalid]="passwordMismatch"
+          placeholder="Repeat your password"
+          [(ngModel)]="confirmPassword"
+          name="confirmPassword"
+          required
+        />
+        <div class="invalid-feedback">Passwords do not match.</div>
+      </div>
+
+      <button
+        type="submit"
+        class="btn btn-primary w-100"
+        [disabled]="loading || !formValid"
+      >
+        <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+        {{ loading ? 'Creating account...' : 'Create account' }}
+      </button>
+    </form>
+
+    <hr class="my-4">
+    <p class="text-center text-muted small mb-0">
+      Already have an account?
+      <a routerLink="/login" class="text-primary text-decoration-none fw-medium">Sign in</a>
+    </p>
+
+  </div>
+</div>
