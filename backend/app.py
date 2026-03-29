@@ -16,7 +16,7 @@ from blueprints.savings_goals import bp as goals_bp
 def create_app():
     app = Flask(__name__)
 
-    CORS(app)
+    CORS(app, resources={r"/*": {"origins": "http://localhost:4200"}}, supports_credentials=True)
 
     app.config.from_object(Config)
 

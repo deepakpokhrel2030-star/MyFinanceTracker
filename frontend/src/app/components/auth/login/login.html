@@ -7,40 +7,51 @@
       <p class="text-muted small mb-0">Sign in to your finance dashboard</p>
     </div>
 
-    <div *ngIf="error" class="alert alert-danger py-2 small">
-      <i class="bi bi-exclamation-circle me-1"></i>{{ error }}
+    <div *ngIf="error" class="alert alert-danger py-2 small d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ error }}</span>
     </div>
 
-    <form (ngSubmit)="onSubmit()">
+    <form (ngSubmit)="onSubmit()" novalidate>
       <div class="mb-3">
         <label class="form-label small fw-medium">Email address</label>
-        <input
-          type="email"
-          class="form-control"
-          placeholder="you@example.com"
-          [(ngModel)]="email"
-          name="email"
-          required
-          autofocus
-        />
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0">
+            <i class="bi bi-envelope text-muted" style="font-size:14px;"></i>
+          </span>
+          <input
+            type="email"
+            class="form-control border-start-0"
+            [class.is-invalid]="error && !email"
+            placeholder="you@example.com"
+            [(ngModel)]="email"
+            name="email"
+            autofocus
+          />
+        </div>
       </div>
 
       <div class="mb-4">
         <label class="form-label small fw-medium">Password</label>
-        <input
-          type="password"
-          class="form-control"
-          placeholder="Enter your password"
-          [(ngModel)]="password"
-          name="password"
-          required
-        />
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0">
+            <i class="bi bi-lock text-muted" style="font-size:14px;"></i>
+          </span>
+          <input
+            type="password"
+            class="form-control border-start-0"
+            [class.is-invalid]="error && !password"
+            placeholder="Enter your password"
+            [(ngModel)]="password"
+            name="password"
+          />
+        </div>
       </div>
 
       <button
         type="submit"
         class="btn btn-primary w-100"
-        [disabled]="loading || !email || !password"
+        [disabled]="loading"
       >
         <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
         {{ loading ? 'Signing in...' : 'Sign in' }}
@@ -50,7 +61,7 @@
     <hr class="my-4">
     <p class="text-center text-muted small mb-0">
       Don't have an account?
-      <a routerLink="/register" class="text-primary text-decoration-none fw-medium">Create one</a>
+      <a href="/register" class="text-primary text-decoration-none fw-medium">Create one</a>
     </p>
 
   </div>

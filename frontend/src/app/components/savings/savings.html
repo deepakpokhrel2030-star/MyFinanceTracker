@@ -1,1 +1,240 @@
-<p>savings works!</p>
+<div class="min-vh-100 bg-light">
+  <div class="container-fluid px-4 py-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h5 class="fw-semibold mb-0">Savings Goals</h5>
+        <p class="text-muted small mb-0">Track your financial goals</p>
+      </div>
+      <button class="btn btn-primary btn-sm"
+        (click)="showForm = !showForm; editingGoal = null">
+        <i class="bi bi-plus-lg me-1"></i>{{ showForm ? 'Cancel' : 'Add Goal' }}
+      </button>
+    </div>
+
+    <!-- Alerts -->
+    <div *ngIf="success" class="alert alert-success py-2 small">
+      <i class="bi bi-check-circle me-1"></i>{{ success }}
+    </div>
+    <div *ngIf="error" class="alert alert-danger py-2 small">
+      <i class="bi bi-exclamation-circle me-1"></i>{{ error }}
+    </div>
+
+    <!-- Add Goal Form -->
+    <div *ngIf="showForm" class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <h6 class="fw-semibold mb-3">
+          <i class="bi bi-plus-circle me-2 text-primary"></i>New Savings Goal
+        </h6>
+        <form (ngSubmit)="onSubmit()">
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label class="form-label small fw-medium">Goal name</label>
+              <input type="text" class="form-control form-control-sm"
+                [(ngModel)]="form.name" name="name"
+                placeholder="e.g. Emergency Fund" required />
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label small fw-medium">Deadline</label>
+              <input type="date" class="form-control form-control-sm"
+                [(ngModel)]="form.deadline" name="deadline" />
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label small fw-medium">Target amount</label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text">£</span>
+                <input type="number" class="form-control"
+                  [(ngModel)]="form.target_amount" name="target_amount"
+                  placeholder="0.00" min="0" required />
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label small fw-medium">Amount saved so far</label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text">£</span>
+                <input type="number" class="form-control"
+                  [(ngModel)]="form.current_amount" name="current_amount"
+                  placeholder="0.00" min="0" />
+              </div>
+            </div>
+          </div>
+          <div class="d-flex gap-2 mt-3">
+            <button type="submit" class="btn btn-primary btn-sm"
+              [disabled]="submitting || !form.name || !form.target_amount">
+              <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
+              {{ submitting ? 'Saving...' : 'Save Goal' }}
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+              (click)="showForm = false; resetForm()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Goal Form -->
+    <div *ngIf="editingGoal" class="card border-0 shadow-sm mb-4 border-warning">
+      <div class="card-body">
+        <h6 class="fw-semibold mb-3">
+          <i class="bi bi-pencil me-2 text-warning"></i>Edit — {{ editingGoal.name }}
+        </h6>
+        <form (ngSubmit)="onEdit()">
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label class="form-label small fw-medium">Goal name</label>
+              <input type="text" class="form-control form-control-sm"
+                [(ngModel)]="editForm.name" name="editName" required />
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label small fw-medium">Deadline</label>
+              <input type="date" class="form-control form-control-sm"
+                [(ngModel)]="editForm.deadline" name="editDeadline" />
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label small fw-medium">Target amount</label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text">£</span>
+                <input type="number" class="form-control"
+                  [(ngModel)]="editForm.target_amount" name="editTarget" min="0" />
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label small fw-medium">Amount saved so far</label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text">£</span>
+                <input type="number" class="form-control"
+                  [(ngModel)]="editForm.current_amount" name="editCurrent" min="0" />
+              </div>
+            </div>
+          </div>
+          <div class="d-flex gap-2 mt-3">
+            <button type="submit" class="btn btn-warning btn-sm" [disabled]="submitting">
+              <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
+              {{ submitting ? 'Updating...' : 'Update Goal' }}
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+              (click)="editingGoal = null">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div *ngIf="goals.length > 0" class="row g-3 mb-4">
+      <div class="col-12 col-md-4">
+        <div class="card border-0 shadow-sm text-center">
+          <div class="card-body">
+            <p class="text-muted small mb-1">Total goals</p>
+            <h4 class="fw-bold mb-0">{{ goals.length }}</h4>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="card border-0 shadow-sm text-center">
+          <div class="card-body">
+            <p class="text-muted small mb-1">Total saved</p>
+            <h4 class="fw-bold text-success mb-0">£{{ totalSaved | number:'1.2-2' }}</h4>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="card border-0 shadow-sm text-center">
+          <div class="card-body">
+            <p class="text-muted small mb-1">Total target</p>
+            <h4 class="fw-bold text-primary mb-0">£{{ totalTarget | number:'1.2-2' }}</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+      <p class="text-muted small mt-2">Loading goals...</p>
+    </div>
+
+    <!-- Goals Grid -->
+    <div *ngIf="!loading">
+      <div *ngIf="goals.length === 0" class="text-center py-5">
+        <i class="bi bi-piggy-bank text-muted" style="font-size:3rem;"></i>
+        <p class="text-muted mt-3 mb-1">No savings goals yet</p>
+        <p class="text-muted small">Click "Add Goal" to start saving</p>
+      </div>
+
+      <div class="row g-3">
+        <div *ngFor="let goal of goals" class="col-12 col-md-6 col-xl-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+
+              <!-- Goal Header -->
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                  <h6 class="fw-semibold mb-1">{{ goal.name }}</h6>
+                  <div *ngIf="goal.deadline">
+                    <span class="small"
+                      [class.text-danger]="getDaysLeft(goal.deadline)! < 30"
+                      [class.text-warning]="getDaysLeft(goal.deadline)! >= 30 && getDaysLeft(goal.deadline)! < 90"
+                      [class.text-muted]="getDaysLeft(goal.deadline)! >= 90">
+                      <i class="bi bi-calendar me-1"></i>
+                      {{ getDaysLeft(goal.deadline) }} days left
+                    </span>
+                  </div>
+                </div>
+                <span class="badge"
+                  [class.bg-success]="getProgress(goal.current_amount, goal.target_amount) >= 100"
+                  [class.bg-primary]="getProgress(goal.current_amount, goal.target_amount) < 100">
+                  {{ getProgress(goal.current_amount, goal.target_amount) | number:'1.0-0' }}%
+                </span>
+              </div>
+
+              <!-- Progress Bar -->
+              <div class="mb-3">
+                <div class="progress mb-2" style="height:10px;">
+                  <div class="progress-bar"
+                    [class.bg-success]="getProgress(goal.current_amount, goal.target_amount) >= 100"
+                    [class.bg-primary]="getProgress(goal.current_amount, goal.target_amount) < 100"
+                    [style.width.%]="getProgress(goal.current_amount, goal.target_amount)">
+                  </div>
+                </div>
+                <div class="d-flex justify-content-between small">
+                  <span class="text-success fw-medium">
+                    £{{ goal.current_amount | number:'1.2-2' }} saved
+                  </span>
+                  <span class="text-muted">
+                    £{{ goal.target_amount | number:'1.2-2' }} target
+                  </span>
+                </div>
+              </div>
+
+              <!-- Remaining -->
+              <div class="mb-3">
+                <p class="text-muted small mb-0">
+                  <i class="bi bi-arrow-up-circle me-1 text-primary"></i>
+                  £{{ (goal.target_amount - goal.current_amount) | number:'1.2-2' }} remaining
+                </p>
+                <p *ngIf="goal.deadline" class="text-muted small mb-0">
+                  <i class="bi bi-calendar3 me-1"></i>
+                  Deadline: {{ goal.deadline | date:'dd MMM yyyy' }}
+                </p>
+              </div>
+
+              <!-- Actions -->
+              <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary btn-sm flex-fill"
+                  (click)="startEdit(goal)">
+                  <i class="bi bi-pencil me-1"></i>Edit
+                </button>
+                <button class="btn btn-outline-danger btn-sm flex-fill"
+                  (click)="deleteGoal(goal.id)">
+                  <i class="bi bi-trash me-1"></i>Delete
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

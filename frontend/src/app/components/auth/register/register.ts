@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [FormsModule, CommonModule, RouterLink],
+  imports: [FormsModule, CommonModule],
   templateUrl: './register.html'
 })
 export class RegisterComponent {
@@ -19,27 +19,68 @@ export class RegisterComponent {
   success = '';
   loading = false;
 
+  nameError = '';
+  emailError = '';
+  passwordError = '';
+  confirmError = '';
+
   constructor(private auth: AuthService, private router: Router) {}
 
-  get passwordMismatch() {
-    return this.confirmPassword.length > 0 && this.password !== this.confirmPassword;
-  }
+  validateForm(): boolean {
+    this.nameError     = '';
+    this.emailError    = '';
+    this.passwordError = '';
+    this.confirmError  = '';
+    let valid = true;
 
-  get formValid() {
-    return this.name && this.email && this.password.length >= 6 && !this.passwordMismatch;
+    if (!this.name.trim()) {
+      this.nameError = 'Full name is required';
+      valid = false;
+    }
+    if (!this.email) {
+      this.emailError = 'Email address is required';
+      valid = false;
+    } else if (!this.email.includes('@')) {
+      this.emailError = 'Please enter a valid email address';
+      valid = false;
+    }
+    if (!this.password) {
+      this.passwordError = 'Password is required';
+      valid = false;
+    } else if (this.password.length < 6) {
+      this.passwordError = 'Password must be at least 6 characters';
+      valid = false;
+    }
+    if (!this.confirmPassword) {
+      this.confirmError = 'Please confirm your password';
+      valid = false;
+    } else if (this.password !== this.confirmPassword) {
+      this.confirmError = 'Passwords do not match';
+      valid = false;
+    }
+
+    return valid;
   }
 
   onSubmit() {
-    if (!this.formValid) return;
     this.error = '';
+    if (!this.validateForm()) return;
+
     this.loading = true;
     this.auth.register(this.name, this.email, this.password).subscribe({
       next: () => {
-        this.success = 'Account created! Redirecting to login...';
+        this.success = 'Account created successfully! Redirecting to login...';
         setTimeout(() => this.router.navigate(['/login']), 1500);
       },
-      error: (err) => {
-        this.error = err.error?.error || 'Registration failed. Please try again.';
+      error: (err: any) => {
+        const status = err.status;
+        if (status === 409) {
+          this.emailError = 'This email is already registered. Try logging in instead.';
+        } else if (status === 0) {
+          this.error = 'Cannot connect to server. Make sure the backend is running.';
+        } else {
+          this.error = err.error?.error || 'Registration failed. Please try again.';
+        }
         this.loading = false;
       }
     });

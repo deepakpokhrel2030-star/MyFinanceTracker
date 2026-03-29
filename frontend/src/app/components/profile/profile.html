@@ -1,1 +1,167 @@
-<p>profile works!</p>
+<div class="min-vh-100 bg-light">
+
+  <div class="container-fluid px-4 py-4">
+
+    <!-- Header -->
+    <div class="mb-4">
+      <h5 class="fw-semibold mb-0">My Profile</h5>
+      <p class="text-muted small mb-0">Manage your account details</p>
+    </div>
+
+    <!-- Alerts -->
+    <div *ngIf="success" class="alert alert-success py-2 small">
+      <i class="bi bi-check-circle me-1"></i>{{ success }}
+    </div>
+    <div *ngIf="error" class="alert alert-danger py-2 small">
+      <i class="bi bi-exclamation-circle me-1"></i>{{ error }}
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+      <p class="text-muted small mt-2">Loading profile...</p>
+    </div>
+
+    <div *ngIf="!loading" class="row g-4">
+
+      <!-- Profile Info Card -->
+      <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow-sm text-center">
+          <div class="card-body py-4">
+            <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center
+              justify-content-center mx-auto mb-3"
+              style="width:80px;height:80px;">
+              <i class="bi bi-person-fill text-primary" style="font-size:2.5rem;"></i>
+            </div>
+            <h5 class="fw-semibold mb-1">{{ user?.name }}</h5>
+            <p class="text-muted small mb-2">{{ user?.email }}</p>
+            <span *ngFor="let role of user?.roles"
+              class="badge bg-primary bg-opacity-10 text-primary me-1">
+              {{ role }}
+            </span>
+            <hr>
+            <div class="text-start">
+              <p class="small mb-1">
+                <i class="bi bi-telephone me-2 text-muted"></i>
+                {{ user?.phone || 'No phone added' }}
+              </p>
+              <p class="small mb-1">
+                <i class="bi bi-geo-alt me-2 text-muted"></i>
+                {{ user?.address?.city || 'No address added' }}
+              </p>
+              <p class="small mb-0">
+                <i class="bi bi-calendar me-2 text-muted"></i>
+                Joined {{ user?.created_at | date:'MMM yyyy' }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Profile Form -->
+      <div class="col-12 col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-body">
+            <h6 class="fw-semibold mb-3">
+              <i class="bi bi-pencil me-2 text-primary"></i>Edit Profile
+            </h6>
+            <form (ngSubmit)="onUpdate()">
+              <div class="row g-3">
+                <div class="col-12 col-md-6">
+                  <label class="form-label small fw-medium">Full name</label>
+                  <input type="text" class="form-control form-control-sm"
+                    [(ngModel)]="form.name" name="name" required />
+                </div>
+                <div class="col-12 col-md-6">
+                  <label class="form-label small fw-medium">Phone number</label>
+                  <input type="text" class="form-control form-control-sm"
+                    [(ngModel)]="form.phone" name="phone"
+                    placeholder="+44 7700 000000" />
+                </div>
+                <div class="col-12">
+                  <label class="form-label small fw-medium">Street address</label>
+                  <input type="text" class="form-control form-control-sm"
+                    [(ngModel)]="form.address.street" name="street"
+                    placeholder="123 Main Street" />
+                </div>
+                <div class="col-12 col-md-4">
+                  <label class="form-label small fw-medium">City</label>
+                  <input type="text" class="form-control form-control-sm"
+                    [(ngModel)]="form.address.city" name="city"
+                    placeholder="London" />
+                </div>
+                <div class="col-12 col-md-4">
+                  <label class="form-label small fw-medium">Postcode</label>
+                  <input type="text" class="form-control form-control-sm"
+                    [(ngModel)]="form.address.postcode" name="postcode"
+                    placeholder="SW1A 1AA" />
+                </div>
+                <div class="col-12 col-md-4">
+                  <label class="form-label small fw-medium">Country</label>
+                  <input type="text" class="form-control form-control-sm"
+                    [(ngModel)]="form.address.country" name="country"
+                    placeholder="United Kingdom" />
+                </div>
+              </div>
+              <div class="mt-3">
+                <button type="submit" class="btn btn-primary btn-sm"
+                  [disabled]="submitting">
+                  <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
+                  {{ submitting ? 'Saving...' : 'Save Changes' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Change Password -->
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="fw-semibold mb-0">
+                <i class="bi bi-lock me-2 text-warning"></i>Change Password
+              </h6>
+              <button class="btn btn-outline-secondary btn-sm"
+                (click)="showPasswordForm = !showPasswordForm">
+                {{ showPasswordForm ? 'Cancel' : 'Change' }}
+              </button>
+            </div>
+
+            <div *ngIf="!showPasswordForm" class="text-muted small">
+              <i class="bi bi-shield-check me-1 text-success"></i>
+              Password is set. Click "Change" to update it.
+            </div>
+
+            <form *ngIf="showPasswordForm" (ngSubmit)="onChangePassword()">
+              <div class="row g-3">
+                <div class="col-12 col-md-6">
+                  <label class="form-label small fw-medium">New password</label>
+                  <input type="password" class="form-control form-control-sm"
+                    [(ngModel)]="passwordForm.password" name="password"
+                    placeholder="At least 6 characters" required />
+                </div>
+                <div class="col-12 col-md-6">
+                  <label class="form-label small fw-medium">Confirm password</label>
+                  <input type="password" class="form-control form-control-sm"
+                    [class.is-invalid]="passwordForm.confirmPassword &&
+                      passwordForm.password !== passwordForm.confirmPassword"
+                    [(ngModel)]="passwordForm.confirmPassword" name="confirmPassword"
+                    placeholder="Repeat password" required />
+                  <div class="invalid-feedback">Passwords do not match</div>
+                </div>
+              </div>
+              <div class="mt-3">
+                <button type="submit" class="btn btn-warning btn-sm"
+                  [disabled]="submitting">
+                  <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
+                  {{ submitting ? 'Updating...' : 'Update Password' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

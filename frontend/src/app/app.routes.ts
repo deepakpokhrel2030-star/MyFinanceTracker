@@ -12,6 +12,7 @@ export const routes: Routes = [
   { path: 'budgets',      canActivate: [authGuard], loadComponent: () => import('./components/budgets/budgets').then(m => m.BudgetsComponent) },
   { path: 'investments',  canActivate: [authGuard], loadComponent: () => import('./components/investments/investments').then(m => m.InvestmentsComponent) },
   { path: 'savings',      canActivate: [authGuard], loadComponent: () => import('./components/savings/savings').then(m => m.SavingsComponent) },
+  { path: 'analytics',    canActivate: [authGuard], loadComponent: () => import('./components/analytics/analytics').then(m => m.AnalyticsComponent) },
   { path: 'profile',      canActivate: [authGuard], loadComponent: () => import('./components/profile/profile').then(m => m.ProfileComponent) },
   { path: 'admin',        canActivate: [authGuard, adminGuard], loadComponent: () => import('./components/admin/admin').then(m => m.AdminComponent) },
   { path: '**', redirectTo: 'dashboard' }

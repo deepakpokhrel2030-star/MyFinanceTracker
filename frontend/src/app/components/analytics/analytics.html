@@ -1,0 +1,349 @@
+<div class="min-vh-100 bg-light">
+  <div class="container-fluid px-4 py-4">
+
+    <div class="mb-4">
+      <h5 class="fw-semibold mb-0">Analytics</h5>
+      <p class="text-muted small mb-0">Your financial insights and spending trends</p>
+    </div>
+
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+      <p class="text-muted small mt-2">Loading analytics...</p>
+    </div>
+
+    <div *ngIf="!loading">
+
+      <!-- Income vs Expense Summary -->
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="card border-0 shadow-sm text-center h-100">
+            <div class="card-body">
+              <div class="rounded-circle bg-success bg-opacity-10 d-flex align-items-center
+                justify-content-center mx-auto mb-2" style="width:44px;height:44px;">
+                <i class="bi bi-arrow-down-circle text-success"></i>
+              </div>
+              <p class="text-muted small mb-1">Total income</p>
+              <h5 class="fw-bold text-success mb-0">
+                £{{ incomeVsExpense?.total_income | number:'1.2-2' }}
+              </h5>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="card border-0 shadow-sm text-center h-100">
+            <div class="card-body">
+              <div class="rounded-circle bg-danger bg-opacity-10 d-flex align-items-center
+                justify-content-center mx-auto mb-2" style="width:44px;height:44px;">
+                <i class="bi bi-arrow-up-circle text-danger"></i>
+              </div>
+              <p class="text-muted small mb-1">Total expenses</p>
+              <h5 class="fw-bold text-danger mb-0">
+                £{{ incomeVsExpense?.total_expense | number:'1.2-2' }}
+              </h5>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="card border-0 shadow-sm text-center h-100">
+            <div class="card-body">
+              <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center
+                justify-content-center mx-auto mb-2" style="width:44px;height:44px;">
+                <i class="bi bi-graph-up text-primary"></i>
+              </div>
+              <p class="text-muted small mb-1">Net savings</p>
+              <h5 class="fw-bold mb-0"
+                [class.text-success]="incomeVsExpense?.net >= 0"
+                [class.text-danger]="incomeVsExpense?.net < 0">
+                £{{ incomeVsExpense?.net | number:'1.2-2' }}
+              </h5>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="card border-0 shadow-sm text-center h-100">
+            <div class="card-body">
+              <div class="rounded-circle bg-warning bg-opacity-10 d-flex align-items-center
+                justify-content-center mx-auto mb-2" style="width:44px;height:44px;">
+                <i class="bi bi-graph-up-arrow text-warning"></i>
+              </div>
+              <p class="text-muted small mb-1">Portfolio value</p>
+              <h5 class="fw-bold mb-0">
+                £{{ portfolioValue?.total_value | number:'1.2-2' }}
+              </h5>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly Income vs Expense Table -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <h6 class="fw-semibold mb-3">
+            <i class="bi bi-calendar3 me-2 text-primary"></i>Monthly income vs expenses
+          </h6>
+          <div *ngIf="incomeVsExpense?.monthly?.length === 0" class="text-center py-3">
+            <p class="text-muted small mb-0">No monthly data yet</p>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="small text-muted fw-medium">Month</th>
+                  <th class="small text-muted fw-medium text-end">Income</th>
+                  <th class="small text-muted fw-medium text-end">Expenses</th>
+                  <th class="small text-muted fw-medium text-end">Net</th>
+                  <th class="small text-muted fw-medium">Trend</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let m of incomeVsExpense?.monthly">
+                  <td class="small fw-medium">
+                    {{ m.year }}-{{ m.month | number:'2.0-0' }}
+                  </td>
+                  <td class="small text-success text-end">£{{ m.income | number:'1.2-2' }}</td>
+                  <td class="small text-danger text-end">£{{ m.expense | number:'1.2-2' }}</td>
+                  <td class="small fw-semibold text-end"
+                    [class.text-success]="m.net >= 0"
+                    [class.text-danger]="m.net < 0">
+                    {{ m.net >= 0 ? '+' : '' }}£{{ m.net | number:'1.2-2' }}
+                  </td>
+                  <td>
+                    <div class="progress" style="height:6px; width:100px;">
+                      <div class="progress-bar"
+                        [class.bg-success]="m.net >= 0"
+                        [class.bg-danger]="m.net < 0"
+                        [style.width.%]="m.income > 0 ? (m.income / (m.income + m.expense)) * 100 : 0">
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Spending Categories -->
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-lg-6">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <h6 class="fw-semibold mb-3">
+                <i class="bi bi-pie-chart me-2 text-success"></i>Top spending categories
+              </h6>
+              <div *ngIf="topCategories.length === 0" class="text-center py-3">
+                <p class="text-muted small mb-0">No spending data yet</p>
+              </div>
+              <div *ngFor="let cat of topCategories; let i = index" class="mb-3">
+                <div class="d-flex justify-content-between small mb-1">
+                  <span class="text-capitalize fw-medium">
+                    <span class="badge me-1 bg-primary" style="font-size:0.65rem;">{{ i + 1 }}</span>
+                    {{ cat.category }}
+                  </span>
+                  <div class="text-end">
+                    <span class="fw-semibold">£{{ cat.total | number:'1.2-2' }}</span>
+                    <span class="text-muted ms-1">({{ cat.count }} txns)</span>
+                  </div>
+                </div>
+                <div class="progress" style="height:8px;">
+                  <div class="progress-bar bg-primary"
+                    [style.width.%]="(cat.total / topCategories[0].total) * 100">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly Spending Summary -->
+        <div class="col-12 col-lg-6">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <h6 class="fw-semibold mb-3">
+                <i class="bi bi-bar-chart me-2 text-warning"></i>Monthly spending summary
+              </h6>
+              <div *ngIf="monthlySpending.length === 0" class="text-center py-3">
+                <p class="text-muted small mb-0">No spending data yet</p>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th class="small text-muted fw-medium">Month</th>
+                      <th class="small text-muted fw-medium text-end">Income</th>
+                      <th class="small text-muted fw-medium text-end">Expenses</th>
+                      <th class="small text-muted fw-medium text-end">Net</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let m of monthlySpending">
+                      <td class="small">{{ m.year }}-{{ m.month | number:'2.0-0' }}</td>
+                      <td class="small text-success text-end">£{{ m.income | number:'1.2-2' }}</td>
+                      <td class="small text-danger text-end">£{{ m.expenses | number:'1.2-2' }}</td>
+                      <td class="small fw-semibold text-end"
+                        [class.text-success]="m.net >= 0"
+                        [class.text-danger]="m.net < 0">
+                        {{ m.net >= 0 ? '+' : '' }}£{{ m.net | number:'1.2-2' }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Budget vs Actual -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-semibold mb-0">
+              <i class="bi bi-bullseye me-2 text-danger"></i>Budget vs actual spending
+            </h6>
+            <input type="month" class="form-control form-control-sm"
+              style="width:160px;"
+              [(ngModel)]="selectedMonth"
+              (change)="onMonthChange()" />
+          </div>
+
+          <div *ngIf="budgetAnalysis" class="row g-3 mb-3">
+            <div class="col-4 text-center">
+              <p class="text-muted small mb-1">Total budget</p>
+              <h6 class="fw-bold text-primary mb-0">£{{ budgetAnalysis.total_limit | number:'1.2-2' }}</h6>
+            </div>
+            <div class="col-4 text-center">
+              <p class="text-muted small mb-1">Total spent</p>
+              <h6 class="fw-bold text-danger mb-0">£{{ budgetAnalysis.total_spent | number:'1.2-2' }}</h6>
+            </div>
+            <div class="col-4 text-center">
+              <p class="text-muted small mb-1">Remaining</p>
+              <h6 class="fw-bold mb-0"
+                [class.text-success]="budgetAnalysis.total_saved > 0"
+                [class.text-danger]="budgetAnalysis.total_over > 0">
+                £{{ (budgetAnalysis.total_saved || budgetAnalysis.total_over) | number:'1.2-2' }}
+              </h6>
+            </div>
+          </div>
+
+          <div *ngIf="budgetAnalysis?.items?.length > 0">
+            <div *ngFor="let item of budgetAnalysis.items" class="mb-3">
+              <div class="d-flex justify-content-between small mb-1">
+                <span class="text-capitalize fw-medium">{{ item.category }}</span>
+                <span>
+                  <span class="fw-semibold"
+                    [class.text-danger]="item.status === 'over'"
+                    [class.text-success]="item.status === 'ok'">
+                    £{{ item.spent | number:'1.2-2' }}
+                  </span>
+                  <span class="text-muted"> / £{{ item.limit | number:'1.2-2' }}</span>
+                </span>
+              </div>
+              <div class="progress mb-1" style="height:8px;">
+                <div class="progress-bar"
+                  [class]="getProgressColor(item.pct_used)"
+                  [style.width.%]="getProgressWidth(item.spent, item.limit)">
+                </div>
+              </div>
+              <div class="d-flex justify-content-between" style="font-size:0.7rem;">
+                <span class="text-muted">{{ item.pct_used }}% used</span>
+                <span [class.text-danger]="item.status === 'over'"
+                  [class.text-success]="item.status === 'ok'">
+                  {{ item.status === 'over'
+                    ? '£' + item.over + ' over budget'
+                    : '£' + item.remaining + ' remaining' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="!budgetAnalysis?.items?.length" class="text-center py-3">
+            <p class="text-muted small mb-0">No budget data for {{ selectedMonth }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Portfolio Performance -->
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h6 class="fw-semibold mb-3">
+            <i class="bi bi-graph-up-arrow me-2 text-warning"></i>Portfolio performance
+          </h6>
+          <div class="row g-3 mb-3">
+            <div class="col-6 col-md-3 text-center">
+              <p class="text-muted small mb-1">Total invested</p>
+              <h6 class="fw-bold mb-0">£{{ portfolioValue?.total_invested | number:'1.2-2' }}</h6>
+            </div>
+            <div class="col-6 col-md-3 text-center">
+              <p class="text-muted small mb-1">Current value</p>
+              <h6 class="fw-bold mb-0">£{{ portfolioValue?.total_value | number:'1.2-2' }}</h6>
+            </div>
+            <div class="col-6 col-md-3 text-center">
+              <p class="text-muted small mb-1">Total P&L</p>
+              <h6 class="fw-bold mb-0"
+                [class.text-success]="portfolioValue?.total_pl >= 0"
+                [class.text-danger]="portfolioValue?.total_pl < 0">
+                {{ portfolioValue?.total_pl >= 0 ? '+' : '' }}£{{ portfolioValue?.total_pl | number:'1.2-2' }}
+              </h6>
+            </div>
+            <div class="col-6 col-md-3 text-center">
+              <p class="text-muted small mb-1">Return %</p>
+              <h6 class="fw-bold mb-0"
+                [class.text-success]="portfolioValue?.total_return_pct >= 0"
+                [class.text-danger]="portfolioValue?.total_return_pct < 0">
+                {{ portfolioValue?.total_return_pct >= 0 ? '+' : '' }}{{ portfolioValue?.total_return_pct | number:'1.2-2' }}%
+              </h6>
+            </div>
+          </div>
+
+          <div *ngIf="portfolioValue?.assets?.length > 0" class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="small text-muted fw-medium">Symbol</th>
+                  <th class="small text-muted fw-medium">Name</th>
+                  <th class="small text-muted fw-medium text-end">Invested</th>
+                  <th class="small text-muted fw-medium text-end">Value</th>
+                  <th class="small text-muted fw-medium text-end">P&L</th>
+                  <th class="small text-muted fw-medium text-end">Return</th>
+                  <th class="small text-muted fw-medium text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let asset of portfolioValue.assets">
+                  <td>
+                    <span class="badge bg-primary bg-opacity-10 text-primary fw-bold">
+                      {{ asset.symbol }}
+                    </span>
+                  </td>
+                  <td class="small fw-medium">{{ asset.name }}</td>
+                  <td class="small text-end">£{{ asset.invested_value | number:'1.2-2' }}</td>
+                  <td class="small text-end fw-semibold">£{{ asset.current_value | number:'1.2-2' }}</td>
+                  <td class="small text-end fw-semibold"
+                    [class.text-success]="asset.profit_loss >= 0"
+                    [class.text-danger]="asset.profit_loss < 0">
+                    {{ asset.profit_loss >= 0 ? '+' : '' }}£{{ asset.profit_loss | number:'1.2-2' }}
+                  </td>
+                  <td class="small text-end"
+                    [class.text-success]="asset.return_pct >= 0"
+                    [class.text-danger]="asset.return_pct < 0">
+                    {{ asset.return_pct >= 0 ? '+' : '' }}{{ asset.return_pct | number:'1.2-2' }}%
+                  </td>
+                  <td class="text-center">
+                    <span class="badge small"
+                      [class.bg-success]="asset.status === 'profit'"
+                      [class.bg-danger]="asset.status === 'loss'"
+                      [class.bg-secondary]="asset.status === 'break-even'">
+                      {{ asset.status }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

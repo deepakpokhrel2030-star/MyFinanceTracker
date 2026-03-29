@@ -7,71 +7,112 @@
       <p class="text-muted small mb-0">Start tracking your finances today</p>
     </div>
 
-    <div *ngIf="error" class="alert alert-danger py-2 small">
-      <i class="bi bi-exclamation-circle me-1"></i>{{ error }}
+    <div *ngIf="error" class="alert alert-danger py-2 small d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span>{{ error }}</span>
     </div>
-    <div *ngIf="success" class="alert alert-success py-2 small">
-      <i class="bi bi-check-circle me-1"></i>{{ success }}
+    <div *ngIf="success" class="alert alert-success py-2 small d-flex align-items-center gap-2">
+      <i class="bi bi-check-circle-fill"></i>
+      <span>{{ success }}</span>
     </div>
 
-    <form (ngSubmit)="onSubmit()">
+    <form (ngSubmit)="onSubmit()" novalidate>
+
       <div class="mb-3">
         <label class="form-label small fw-medium">Full name</label>
-        <input
-          type="text"
-          class="form-control"
-          placeholder="Your full name"
-          [(ngModel)]="name"
-          name="name"
-          required
-          autofocus
-        />
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0">
+            <i class="bi bi-person text-muted" style="font-size:14px;"></i>
+          </span>
+          <input
+            type="text"
+            class="form-control border-start-0"
+            [class.is-invalid]="nameError"
+            placeholder="Your full name"
+            [(ngModel)]="name"
+            name="name"
+            autofocus
+          />
+          <div class="invalid-feedback">{{ nameError }}</div>
+        </div>
       </div>
 
       <div class="mb-3">
         <label class="form-label small fw-medium">Email address</label>
-        <input
-          type="email"
-          class="form-control"
-          placeholder="you@example.com"
-          [(ngModel)]="email"
-          name="email"
-          required
-        />
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0">
+            <i class="bi bi-envelope text-muted" style="font-size:14px;"></i>
+          </span>
+          <input
+            type="email"
+            class="form-control border-start-0"
+            [class.is-invalid]="emailError"
+            placeholder="you@example.com"
+            [(ngModel)]="email"
+            name="email"
+          />
+          <div class="invalid-feedback">{{ emailError }}</div>
+        </div>
       </div>
 
       <div class="mb-3">
         <label class="form-label small fw-medium">Password</label>
-        <input
-          type="password"
-          class="form-control"
-          [class.is-invalid]="password.length > 0 && password.length < 6"
-          placeholder="At least 6 characters"
-          [(ngModel)]="password"
-          name="password"
-          required
-        />
-        <div class="invalid-feedback">Password must be at least 6 characters.</div>
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0">
+            <i class="bi bi-lock text-muted" style="font-size:14px;"></i>
+          </span>
+          <input
+            type="password"
+            class="form-control border-start-0"
+            [class.is-invalid]="passwordError"
+            placeholder="At least 6 characters"
+            [(ngModel)]="password"
+            name="password"
+          />
+          <div class="invalid-feedback">{{ passwordError }}</div>
+        </div>
+        <div *ngIf="password.length > 0" class="mt-1">
+          <div class="progress" style="height:4px;">
+            <div class="progress-bar"
+              [class.bg-danger]="password.length < 6"
+              [class.bg-warning]="password.length >= 6 && password.length < 10"
+              [class.bg-success]="password.length >= 10"
+              [style.width.%]="password.length < 6 ? 33 : password.length < 10 ? 66 : 100">
+            </div>
+          </div>
+          <p class="small mt-1 mb-0"
+            [class.text-danger]="password.length < 6"
+            [class.text-warning]="password.length >= 6 && password.length < 10"
+            [class.text-success]="password.length >= 10">
+            {{ password.length < 6 ? 'Too short' : password.length < 10 ? 'Good' : 'Strong' }}
+          </p>
+        </div>
       </div>
 
       <div class="mb-4">
         <label class="form-label small fw-medium">Confirm password</label>
-        <input
-          type="password"
-          class="form-control"
-          [class.is-invalid]="passwordMismatch"
-          placeholder="Repeat your password"
-          [(ngModel)]="confirmPassword"
-          name="confirmPassword"
-          required
-        />
-        <div class="invalid-feedback">Passwords do not match.</div>
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0">
+            <i class="bi bi-lock-fill text-muted" style="font-size:14px;"></i>
+          </span>
+          <input
+            type="password"
+            class="form-control border-start-0"
+            [class.is-invalid]="confirmError"
+            [class.is-valid]="confirmPassword && !confirmError && password === confirmPassword"
+            placeholder="Repeat your password"
+            [(ngModel)]="confirmPassword"
+            name="confirmPassword"
+          />
+          <div class="invalid-feedback">{{ confirmError }}</div>
+          <div class="valid-feedback">Passwords match!</div>
+        </div>
       </div>
 
       <button
         type="submit"
         class="btn btn-primary w-100"
-        [disabled]="loading || !formValid"
+        [disabled]="loading"
       >
         <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
         {{ loading ? 'Creating account...' : 'Create account' }}
@@ -81,7 +122,7 @@
     <hr class="my-4">
     <p class="text-center text-muted small mb-0">
       Already have an account?
-      <a routerLink="/login" class="text-primary text-decoration-none fw-medium">Sign in</a>
+      <a href="/login" class="text-primary text-decoration-none fw-medium">Sign in</a>
     </p>
 
   </div>

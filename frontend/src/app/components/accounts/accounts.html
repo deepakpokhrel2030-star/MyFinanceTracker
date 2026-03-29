@@ -1,35 +1,4 @@
 <div class="min-vh-100 bg-light">
-
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
-    <div class="container-fluid px-4">
-      <a class="navbar-brand fw-semibold" routerLink="/dashboard">
-        <i class="bi bi-wallet2 me-2"></i>FinanceTracker
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navMenu">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" routerLink="/dashboard"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link active" routerLink="/accounts"><i class="bi bi-bank me-1"></i>Accounts</a></li>
-          <li class="nav-item"><a class="nav-link" routerLink="/transactions"><i class="bi bi-arrow-left-right me-1"></i>Transactions</a></li>
-          <li class="nav-item"><a class="nav-link" routerLink="/budgets"><i class="bi bi-pie-chart me-1"></i>Budgets</a></li>
-          <li class="nav-item"><a class="nav-link" routerLink="/investments"><i class="bi bi-graph-up-arrow me-1"></i>Investments</a></li>
-          <li class="nav-item"><a class="nav-link" routerLink="/savings"><i class="bi bi-piggy-bank me-1"></i>Savings</a></li>
-        </ul>
-        <div class="d-flex align-items-center gap-3">
-          <a routerLink="/profile" class="text-white text-decoration-none small">
-            <i class="bi bi-person-circle me-1"></i>Profile
-          </a>
-          <button class="btn btn-outline-light btn-sm" (click)="logout()">
-            <i class="bi bi-box-arrow-right me-1"></i>Logout
-          </button>
-        </div>
-      </div>
-    </div>
-  </nav>
-
   <div class="container-fluid px-4 py-4">
 
     <!-- Header -->

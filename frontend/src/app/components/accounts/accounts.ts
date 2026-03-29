@@ -1,19 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { AccountService } from '../../services/account';
 import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-accounts',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './accounts.html'
 })
 export class AccountsComponent implements OnInit {
   accounts: any[] = [];
-  loading = true;
+  loading = false;
   showAddForm = false;
   editingAccount: any = null;
   submitting = false;
@@ -37,21 +36,27 @@ export class AccountsComponent implements OnInit {
 
   constructor(
     private accountService: AccountService,
-    private auth: AuthService
+    private auth: AuthService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
-    this.loadAccounts();
+    setTimeout(() => this.loadAccounts(), 0);
   }
 
   loadAccounts() {
     this.loading = true;
+    this.cdr.detectChanges();
     this.accountService.getAll().subscribe({
-      next: (res) => {
-        this.accounts = res.data?.items || res.items || [];
-        this.loading = false;
+      next: (res: any) => {
+        this.accounts = res || [];
+        this.loading  = false;
+        this.cdr.detectChanges();
       },
-      error: () => { this.loading = false; }
+      error: () => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -60,15 +65,15 @@ export class AccountsComponent implements OnInit {
     this.error = '';
     this.accountService.create(this.form).subscribe({
       next: () => {
-        this.success = 'Account created successfully!';
+        this.success     = 'Account created successfully!';
         this.showAddForm = false;
         this.resetForm();
         this.loadAccounts();
-        this.submitting = false;
+        this.submitting  = false;
         setTimeout(() => this.success = '', 3000);
       },
-      error: (err) => {
-        this.error = err.error?.error || 'Failed to create account';
+      error: (err: any) => {
+        this.error      = err.error?.error || 'Failed to create account';
         this.submitting = false;
       }
     });
@@ -77,10 +82,10 @@ export class AccountsComponent implements OnInit {
   startEdit(acc: any) {
     this.editingAccount = acc;
     this.editForm = {
-      name: acc.name,
+      name:      acc.name,
       bank_name: acc.bank_name || '',
-      currency: acc.currency,
-      balance: acc.balance
+      currency:  acc.currency,
+      balance:   acc.balance
     };
   }
 
@@ -90,14 +95,14 @@ export class AccountsComponent implements OnInit {
     this.error = '';
     this.accountService.update(this.editingAccount.id, this.editForm).subscribe({
       next: () => {
-        this.success = 'Account updated successfully!';
+        this.success        = 'Account updated successfully!';
         this.editingAccount = null;
         this.loadAccounts();
-        this.submitting = false;
+        this.submitting     = false;
         setTimeout(() => this.success = '', 3000);
       },
-      error: (err) => {
-        this.error = err.error?.error || 'Failed to update account';
+      error: (err: any) => {
+        this.error      = err.error?.error || 'Failed to update account';
         this.submitting = false;
       }
     });
@@ -111,14 +116,14 @@ export class AccountsComponent implements OnInit {
         this.loadAccounts();
         setTimeout(() => this.success = '', 3000);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.error = err.error?.error || 'Failed to delete account';
       }
     });
   }
 
   get totalBalance() {
-    return this.accounts.reduce((sum, a) => sum + (a.balance || 0), 0);
+    return this.accounts.reduce((sum: number, a: any) => sum + (a.balance || 0), 0);
   }
 
   resetForm() {

@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth';
 import { AnalyticsService } from '../../services/analytics';
 import { AccountService } from '../../services/account';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -22,46 +23,43 @@ export class DashboardComponent implements OnInit {
   constructor(
     private auth: AuthService,
     private analytics: AnalyticsService,
-    private accountService: AccountService
+    private accountService: AccountService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     this.user = this.auth.currentUser$.value;
-    this.loadData();
+    setTimeout(() => this.loadData(), 0);
   }
 
   loadData() {
     this.loading = true;
+    this.cdr.detectChanges();
 
-    this.accountService.getAll().subscribe({
-      next: (res) => this.accounts = res.data?.items || res.items || [],
-      error: () => {}
-    });
-
-    this.analytics.getIncomeVsExpense().subscribe({
-      next: (res) => this.incomeVsExpense = res.data || res,
-      error: () => {}
-    });
-
-    this.analytics.getTopCategories().subscribe({
-      next: (res) => this.topCategories = res.data?.data || res.data || [],
-      error: () => {}
-    });
-
-    this.analytics.getPortfolioValue().subscribe({
-      next: (res) => {
-        this.portfolioValue = res.data || res;
-        this.loading = false;
+    forkJoin({
+      accounts:   this.accountService.getAll(),
+      income:     this.analytics.getIncomeVsExpense(),
+      categories: this.analytics.getTopCategories(),
+      portfolio:  this.analytics.getPortfolioValue()
+    }).subscribe({
+      next: (res: any) => {
+        this.accounts        = res.accounts   || [];
+        this.incomeVsExpense = res.income;
+        this.topCategories   = res.categories || [];
+        this.portfolioValue  = res.portfolio;
+        this.loading         = false;
+        this.cdr.detectChanges();
       },
-      error: () => { this.loading = false; }
+      error: () => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
   get totalBalance() {
-    return this.accounts.reduce((sum, a) => sum + (a.balance || 0), 0);
+    return this.accounts.reduce((sum: number, a: any) => sum + (a.balance || 0), 0);
   }
 
-  logout() {
-    this.auth.logout();
-  }
+  logout() { this.auth.logout(); }
 }
