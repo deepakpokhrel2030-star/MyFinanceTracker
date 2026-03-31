@@ -32,30 +32,32 @@ export class DashboardComponent implements OnInit {
     setTimeout(() => this.loadData(), 0);
   }
 
-  loadData() {
-    this.loading = true;
-    this.cdr.detectChanges();
+loadData() {
+  this.loading = true;
+  this.cdr.detectChanges();
 
-    forkJoin({
-      accounts:   this.accountService.getAll(),
-      income:     this.analytics.getIncomeVsExpense(),
-      categories: this.analytics.getTopCategories(),
-      portfolio:  this.analytics.getPortfolioValue()
-    }).subscribe({
-      next: (res: any) => {
-        this.accounts        = res.accounts   || [];
-        this.incomeVsExpense = res.income;
-        this.topCategories   = res.categories || [];
-        this.portfolioValue  = res.portfolio;
-        this.loading         = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
-  }
+  forkJoin({
+    accounts:   this.accountService.getAll(),
+    income:     this.analytics.getIncomeVsExpense(),
+    categories: this.analytics.getTopCategories(),
+    portfolio:  this.analytics.getPortfolioValue()
+  }).subscribe({
+    next: (res: any) => {
+      this.accounts        = res.accounts || [];
+      this.incomeVsExpense = res.income   || null;
+      this.topCategories   = Array.isArray(res.categories)
+        ? res.categories
+        : res.categories?.data || [];
+      this.portfolioValue  = res.portfolio || null;
+      this.loading         = false;
+      this.cdr.detectChanges();
+    },
+    error: () => {
+      this.loading = false;
+      this.cdr.detectChanges();
+    }
+  });
+}
 
   get totalBalance() {
     return this.accounts.reduce((sum: number, a: any) => sum + (a.balance || 0), 0);
