@@ -43,22 +43,21 @@ export class SavingsComponent implements OnInit {
     setTimeout(() => this.loadGoals(), 0);
   }
 
-  loadGoals() {
-    this.loading = true;
-    this.cdr.detectChanges();
-    this.savingsService.getAll().subscribe({
-      next: (res: any) => {
-        this.goals   = res || [];
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
-  }
-
+loadGoals() {
+  this.loading = true;
+  this.cdr.detectChanges();
+  this.savingsService.getAll().subscribe({
+    next: (res: any) => {
+      this.goals   = Array.isArray(res) ? res : res.items || [];
+      this.loading = false;
+      this.cdr.detectChanges();
+    },
+    error: () => {
+      this.loading = false;
+      this.cdr.detectChanges();
+    }
+  });
+}
   onSubmit() {
     this.submitting = true;
     this.error = '';

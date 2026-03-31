@@ -111,6 +111,90 @@ def get_tx(tx_id):
     return ok({"transaction": tx})
 
 
+@bp.put("/<tx_id>")
+@jwt_required
+def update_tx(tx_id):
+    uid  = get_current_user_id()
+    tid  = parse_objectid(tx_id)
+    if not tid:
+        return bad_request("invalid id — must be 24-character hex string")
+
+    tx = ext.mongo.transactions.find_one({"_id": tid, "user_id": uid})
+    if not tx:
+        return not_found("transaction not found")
+
+    data    = request.get_json() or {}
+    allowed = {}
+
+    if "amount" in data:
+        try:
+            allowed["amount"] = float(data["amount"])
+        except Exception:
+            return bad_request("amount must be a number")
+
+    if "type" in data:
+        allowed["type"] = data["type"].strip().lower()
+
+    if "category" in data:
+        allowed["category"] = data["category"].strip().lower()
+
+    if "merchant" in data:
+        allowed["merchant"] = data["merchant"].strip()
+
+    if "description" in data:
+        allowed["description"] = data["description"].strip()
+
+    if "date" in data:
+        dt = parse_date(data["date"])
+        if not dt:
+            return bad_request("invalid date; use YYYY-MM-DD or ISO format")
+        allowed["date"] = dt
+
+    if "account_id" in data:
+        aid = parse_objectid(data["account_id"])
+        if not aid:
+            return bad_request("invalid account_id")
+        if not ext.mongo.accounts.find_one({"_id": aid, "user_id": uid}):
+            return not_found("account not found")
+        allowed["account_id"] = aid
+
+    if "status" in data:
+        allowed["status"] = data["status"].strip().lower()
+
+    if not allowed:
+        return bad_request("no updatable fields provided")
+
+    old_amount = tx.get("amount", 0)
+    new_amount = allowed.get("amount", old_amount)
+
+    ext.mongo.transactions.update_one(
+        {"_id": tid, "user_id": uid},
+        {"$set": allowed}
+    )
+
+    if "amount" in allowed or "account_id" in allowed:
+        old_account_id = tx["account_id"]
+        new_account_id = allowed.get("account_id", old_account_id)
+
+        if str(old_account_id) == str(new_account_id):
+            diff = new_amount - old_amount
+            ext.mongo.accounts.update_one(
+                {"_id": old_account_id},
+                {"$inc": {"balance": diff}}
+            )
+        else:
+            ext.mongo.accounts.update_one(
+                {"_id": old_account_id},
+                {"$inc": {"balance": -old_amount}}
+            )
+            ext.mongo.accounts.update_one(
+                {"_id": new_account_id},
+                {"$inc": {"balance": new_amount}}
+            )
+
+    return ok({"updated": True})
+
+
 @bp.delete("/<tx_id>")
 @jwt_required
 def delete_tx(tx_id):

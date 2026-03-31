@@ -50,26 +50,30 @@ export class InvestmentsComponent implements OnInit {
     setTimeout(() => this.loadInvestments(), 0);
   }
 
-  loadInvestments() {
-    this.loading = true;
-    this.cdr.detectChanges();
+loadInvestments() {
+  this.loading = true;
+  this.cdr.detectChanges();
 
-    forkJoin({
-      investments: this.investmentService.getAll(),
-      analytics:   this.investmentService.getAnalytics()
-    }).subscribe({
-      next: (res: any) => {
-        this.investments = res.investments || [];
-        this.analytics   = res.analytics;
-        this.loading     = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
-  }
+  this.investmentService.getAll().subscribe({
+    next: (res: any) => {
+      this.investments = Array.isArray(res) ? res : res.items || [];
+      this.cdr.detectChanges();
+    },
+    error: () => {}
+  });
+
+  this.investmentService.getAnalytics().subscribe({
+    next: (res: any) => {
+      this.analytics = res;
+      this.loading   = false;
+      this.cdr.detectChanges();
+    },
+    error: () => {
+      this.loading = false;
+      this.cdr.detectChanges();
+    }
+  });
+}
 
   onSubmit() {
     this.submitting = true;

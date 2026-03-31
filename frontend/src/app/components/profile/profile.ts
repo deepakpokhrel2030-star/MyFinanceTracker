@@ -63,7 +63,8 @@ export class ProfileComponent implements OnInit {
         this.loading = false;
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err: any) => {
+        console.error('profile error:', err);
         this.loading = false;
         this.cdr.detectChanges();
       }
@@ -72,18 +73,30 @@ export class ProfileComponent implements OnInit {
 
   onUpdate() {
     this.submitting = true;
-    this.error = '';
-    this.http.put<any>('http://localhost:5000/auth/me', this.form).subscribe({
+    this.error      = '';
+    this.success    = '';
+    this.cdr.detectChanges();
+
+    const payload = {
+      name:    this.form.name,
+      phone:   this.form.phone,
+      address: this.form.address
+    };
+
+    this.http.put<any>('http://localhost:5000/auth/me', payload).subscribe({
       next: () => {
-        this.success = 'Profile updated successfully!';
+        this.success    = 'Profile updated successfully!';
         this.submitting = false;
-        this.auth.currentUser$.next({ ...this.auth.currentUser$.value, name: this.form.name });
-        localStorage.setItem('user', JSON.stringify({ ...this.auth.currentUser$.value }));
-        setTimeout(() => this.success = '', 3000);
+        const updated   = { ...this.auth.currentUser$.value, name: this.form.name };
+        this.auth.currentUser$.next(updated);
+        localStorage.setItem('user', JSON.stringify(updated));
+        this.cdr.detectChanges();
+        setTimeout(() => { this.success = ''; this.cdr.detectChanges(); }, 3000);
       },
       error: (err: any) => {
         this.error      = err.error?.error || 'Failed to update profile';
         this.submitting = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -91,14 +104,18 @@ export class ProfileComponent implements OnInit {
   onChangePassword() {
     if (this.passwordForm.password !== this.passwordForm.confirmPassword) {
       this.error = 'Passwords do not match';
+      this.cdr.detectChanges();
       return;
     }
     if (this.passwordForm.password.length < 6) {
       this.error = 'Password must be at least 6 characters';
+      this.cdr.detectChanges();
       return;
     }
     this.submitting = true;
-    this.error = '';
+    this.error      = '';
+    this.cdr.detectChanges();
+
     this.http.put<any>('http://localhost:5000/auth/me', {
       password: this.passwordForm.password
     }).subscribe({
@@ -107,11 +124,13 @@ export class ProfileComponent implements OnInit {
         this.showPasswordForm = false;
         this.passwordForm     = { password: '', confirmPassword: '' };
         this.submitting       = false;
-        setTimeout(() => this.success = '', 3000);
+        this.cdr.detectChanges();
+        setTimeout(() => { this.success = ''; this.cdr.detectChanges(); }, 3000);
       },
       error: (err: any) => {
         this.error      = err.error?.error || 'Failed to change password';
         this.submitting = false;
+        this.cdr.detectChanges();
       }
     });
   }

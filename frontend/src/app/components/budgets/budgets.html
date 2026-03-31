@@ -4,15 +4,15 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
         <h5 class="fw-semibold mb-0">Budgets</h5>
-        <p class="text-muted small mb-0">Track your monthly spending limits</p>
+        <p class="text-muted small mb-0">
+          {{ filteredBudgets.length }} budget(s)
+          {{ selectedMonth ? 'for ' + selectedMonth : 'across all months' }}
+        </p>
       </div>
-      <div class="d-flex gap-2 align-items-center">
-        <input type="month" class="form-control form-control-sm"
-          [(ngModel)]="selectedMonth" (change)="onMonthChange()" />
-        <button class="btn btn-primary btn-sm" (click)="showForm = !showForm; editingBudget = null">
-          <i class="bi bi-plus-lg me-1"></i>{{ showForm ? 'Cancel' : 'Add Budget' }}
-        </button>
-      </div>
+      <button class="btn btn-primary btn-sm"
+        (click)="showForm = !showForm; editingBudget = null">
+        <i class="bi bi-plus-lg me-1"></i>{{ showForm ? 'Cancel' : 'Add Budget' }}
+      </button>
     </div>
 
     <div *ngIf="success" class="alert alert-success py-2 small">
@@ -30,7 +30,12 @@
         </h6>
         <form (ngSubmit)="onSubmit()">
           <div class="row g-3">
-            <div class="col-12 col-md-5">
+            <div class="col-12 col-md-4">
+              <label class="form-label small fw-medium">Month</label>
+              <input type="month" class="form-control form-control-sm"
+                [(ngModel)]="form.month" name="month" required />
+            </div>
+            <div class="col-12 col-md-4">
               <label class="form-label small fw-medium">Category</label>
               <select class="form-select form-select-sm"
                 [(ngModel)]="form.category" name="category" required>
@@ -49,13 +54,15 @@
                   placeholder="0.00" min="0" required />
               </div>
             </div>
-            <div class="col-12 col-md-3 d-flex align-items-end">
-              <button type="submit" class="btn btn-primary btn-sm w-100"
-                [disabled]="submitting || !form.category || !form.limit">
-                <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
-                {{ submitting ? 'Saving...' : 'Save Budget' }}
-              </button>
-            </div>
+          </div>
+          <div class="d-flex gap-2 mt-3">
+            <button type="submit" class="btn btn-primary btn-sm"
+              [disabled]="submitting || !form.category || !form.limit">
+              <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
+              {{ submitting ? 'Saving...' : 'Save Budget' }}
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+              (click)="showForm = false; resetForm()">Cancel</button>
           </div>
         </form>
       </div>
@@ -65,11 +72,17 @@
     <div *ngIf="editingBudget" class="card border-0 shadow-sm mb-4 border-warning">
       <div class="card-body">
         <h6 class="fw-semibold mb-3">
-          <i class="bi bi-pencil me-2 text-warning"></i>Edit Budget — {{ editingBudget.category | titlecase }}
+          <i class="bi bi-pencil me-2 text-warning"></i>
+          Edit — {{ editingBudget.category | titlecase }} ({{ editingBudget.month }})
         </h6>
         <form (ngSubmit)="onEdit()">
           <div class="row g-3">
-            <div class="col-12 col-md-5">
+            <div class="col-12 col-md-4">
+              <label class="form-label small fw-medium">Month</label>
+              <input type="month" class="form-control form-control-sm"
+                [(ngModel)]="editForm.month" name="editMonth" />
+            </div>
+            <div class="col-12 col-md-4">
               <label class="form-label small fw-medium">Category</label>
               <select class="form-select form-select-sm"
                 [(ngModel)]="editForm.category" name="editCategory">
@@ -86,108 +99,174 @@
                   [(ngModel)]="editForm.limit" name="editLimit" min="0" />
               </div>
             </div>
-            <div class="col-12 col-md-3 d-flex align-items-end gap-2">
-              <button type="submit" class="btn btn-warning btn-sm flex-fill"
-                [disabled]="submitting">
-                <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
-                {{ submitting ? 'Updating...' : 'Update' }}
-              </button>
-              <button type="button" class="btn btn-outline-secondary btn-sm"
-                (click)="editingBudget = null">Cancel</button>
-            </div>
+          </div>
+          <div class="d-flex gap-2 mt-3">
+            <button type="submit" class="btn btn-warning btn-sm" [disabled]="submitting">
+              <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
+              {{ submitting ? 'Updating...' : 'Update Budget' }}
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+              (click)="editingBudget = null">Cancel</button>
           </div>
         </form>
       </div>
     </div>
 
-    <!-- Summary Cards -->
-    <div *ngIf="analysis" class="row g-3 mb-4">
-      <div class="col-12 col-md-4">
-        <div class="card border-0 shadow-sm text-center">
-          <div class="card-body">
-            <p class="text-muted small mb-1">Total budget</p>
-            <h4 class="fw-bold text-primary mb-0">£{{ analysis.total_limit | number:'1.2-2' }}</h4>
+    <!-- Filter -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body">
+        <h6 class="fw-semibold mb-3">
+          <i class="bi bi-funnel me-2 text-secondary"></i>Filter by month
+        </h6>
+        <div class="row g-2 align-items-end">
+          <div class="col-6 col-md-3">
+            <label class="form-label small fw-medium">Year</label>
+            <select class="form-select form-select-sm"
+              [(ngModel)]="selectedYear"
+              (change)="onYearMonthChange()">
+              <option value="">All years</option>
+              <option *ngFor="let y of availableYears" [value]="y">{{ y }}</option>
+            </select>
           </div>
-        </div>
-      </div>
-      <div class="col-12 col-md-4">
-        <div class="card border-0 shadow-sm text-center">
-          <div class="card-body">
-            <p class="text-muted small mb-1">Total spent</p>
-            <h4 class="fw-bold text-danger mb-0">£{{ analysis.total_spent | number:'1.2-2' }}</h4>
+          <div class="col-6 col-md-3">
+            <label class="form-label small fw-medium">Month</label>
+            <select class="form-select form-select-sm"
+              [(ngModel)]="selectedMonthNum"
+              (change)="onYearMonthChange()">
+              <option value="">All months</option>
+              <option value="01">January</option>
+              <option value="02">February</option>
+              <option value="03">March</option>
+              <option value="04">April</option>
+              <option value="05">May</option>
+              <option value="06">June</option>
+              <option value="07">July</option>
+              <option value="08">August</option>
+              <option value="09">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
           </div>
-        </div>
-      </div>
-      <div class="col-12 col-md-4">
-        <div class="card border-0 shadow-sm text-center">
-          <div class="card-body">
-            <p class="text-muted small mb-1">Remaining</p>
-            <h4 class="fw-bold mb-0"
-              [class.text-success]="analysis.total_saved > 0"
-              [class.text-danger]="analysis.total_over > 0">
-              £{{ (analysis.total_saved || analysis.total_over) | number:'1.2-2' }}
-              <small class="fs-6">{{ analysis.total_over > 0 ? 'over' : 'saved' }}</small>
-            </h4>
+          <div class="col-12 col-md-3">
+            <label class="form-label small fw-medium">Or pick existing month</label>
+            <select class="form-select form-select-sm"
+              [(ngModel)]="selectedMonth"
+              (change)="onMonthChange()">
+              <option value="">All months</option>
+              <option *ngFor="let m of uniqueMonths" [value]="m">{{ m }}</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-3">
+            <button class="btn btn-outline-secondary btn-sm w-100"
+              (click)="clearFilter()">
+              <i class="bi bi-x-circle me-1"></i>Clear filter
+            </button>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Analysis (only when specific month selected) -->
+    <div *ngIf="selectedMonth && analysis">
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-md-4">
+          <div class="card border-0 shadow-sm text-center">
+            <div class="card-body">
+              <p class="text-muted small mb-1">Total budget</p>
+              <h4 class="fw-bold text-primary mb-0">
+                £{{ analysis.total_limit | number:'1.2-2' }}
+              </h4>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-4">
+          <div class="card border-0 shadow-sm text-center">
+            <div class="card-body">
+              <p class="text-muted small mb-1">Total spent</p>
+              <h4 class="fw-bold text-danger mb-0">
+                £{{ analysis.total_spent | number:'1.2-2' }}
+              </h4>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-md-4">
+          <div class="card border-0 shadow-sm text-center">
+            <div class="card-body">
+              <p class="text-muted small mb-1">Remaining</p>
+              <h4 class="fw-bold mb-0"
+                [class.text-success]="analysis.total_saved > 0"
+                [class.text-danger]="analysis.total_over > 0">
+                £{{ (analysis.total_saved || analysis.total_over) | number:'1.2-2' }}
+                <small class="fs-6">
+                  {{ analysis.total_over > 0 ? 'over' : 'saved' }}
+                </small>
+              </h4>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="analysis?.items?.length > 0" class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <h6 class="fw-semibold mb-3">
+            <i class="bi bi-bar-chart me-2 text-primary"></i>
+            Budget vs actual — {{ selectedMonth }}
+          </h6>
+          <div *ngFor="let item of analysis.items" class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="small fw-medium text-capitalize">{{ item.category }}</span>
+              <div class="text-end">
+                <span class="small fw-semibold"
+                  [class.text-danger]="item.status === 'over'"
+                  [class.text-success]="item.status === 'ok'">
+                  £{{ item.spent | number:'1.2-2' }}
+                </span>
+                <span class="text-muted small"> / £{{ item.limit | number:'1.2-2' }}</span>
+              </div>
+            </div>
+            <div class="progress mb-1" style="height:8px;">
+              <div class="progress-bar"
+                [class]="getProgressColor(item.pct_used)"
+                [style.width.%]="getProgressWidth(item.spent, item.limit)">
+              </div>
+            </div>
+            <div class="d-flex justify-content-between" style="font-size:0.7rem;">
+              <span class="text-muted">{{ item.pct_used }}% used</span>
+              <span
+                [class.text-danger]="item.status === 'over'"
+                [class.text-success]="item.status === 'ok'">
+                {{ item.status === 'over'
+                  ? '£' + item.over + ' over budget'
+                  : '£' + item.remaining + ' remaining' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading -->
     <div *ngIf="loading" class="text-center py-5">
       <div class="spinner-border text-primary"></div>
       <p class="text-muted small mt-2">Loading budgets...</p>
     </div>
 
-    <!-- Budget vs Actual -->
-    <div *ngIf="!loading && analysis?.items?.length > 0" class="card border-0 shadow-sm mb-4">
-      <div class="card-body">
-        <h6 class="fw-semibold mb-3">
-          <i class="bi bi-bar-chart me-2 text-primary"></i>Budget vs actual — {{ selectedMonth }}
-        </h6>
-        <div *ngFor="let item of analysis.items" class="mb-4">
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <span class="small fw-medium text-capitalize">{{ item.category }}</span>
-            <div class="text-end">
-              <span class="small fw-semibold"
-                [class.text-danger]="item.status === 'over'"
-                [class.text-success]="item.status === 'ok'">
-                £{{ item.spent | number:'1.2-2' }}
-              </span>
-              <span class="text-muted small"> / £{{ item.limit | number:'1.2-2' }}</span>
-            </div>
-          </div>
-          <div class="progress mb-1" style="height:8px;">
-            <div class="progress-bar"
-              [class]="getProgressColor(item.pct_used)"
-              [style.width.%]="getProgressWidth(item.spent, item.limit)">
-            </div>
-          </div>
-          <div class="d-flex justify-content-between">
-            <span class="text-muted" style="font-size:0.7rem;">{{ item.pct_used }}% used</span>
-            <span style="font-size:0.7rem;"
-              [class.text-danger]="item.status === 'over'"
-              [class.text-success]="item.status === 'ok'">
-              {{ item.status === 'over'
-                ? '£' + item.over + ' over budget'
-                : '£' + item.remaining + ' remaining' }}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Budget List with Edit/Delete -->
+    <!-- Budgets Table -->
     <div *ngIf="!loading">
-      <div *ngIf="budgets.length === 0 && !analysis?.items?.length" class="text-center py-5">
+      <div *ngIf="filteredBudgets.length === 0" class="text-center py-5">
         <i class="bi bi-pie-chart text-muted" style="font-size:3rem;"></i>
-        <p class="text-muted mt-3 mb-1">No budgets set for {{ selectedMonth }}</p>
+        <p class="text-muted mt-3 mb-1">
+          {{ selectedMonth ? 'No budgets for ' + selectedMonth : 'No budgets found' }}
+        </p>
         <p class="text-muted small">Click "Add Budget" to set spending limits</p>
       </div>
 
-      <div *ngIf="budgets.length > 0" class="card border-0 shadow-sm">
+      <div *ngIf="filteredBudgets.length > 0" class="card border-0 shadow-sm">
         <div class="card-body">
           <h6 class="fw-semibold mb-3">
-            <i class="bi bi-list me-2 text-secondary"></i>Set budgets
+            <i class="bi bi-list me-2 text-secondary"></i>
+            All budgets {{ selectedMonth ? '— ' + selectedMonth : '' }}
           </h6>
           <div class="table-responsive">
             <table class="table table-sm table-hover align-middle mb-0">
@@ -200,10 +279,18 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let b of budgets">
-                  <td class="small fw-medium text-capitalize">{{ b.category }}</td>
-                  <td class="small text-muted">{{ b.month }}</td>
-                  <td class="small fw-semibold text-end">£{{ b.limit | number:'1.2-2' }}</td>
+                <tr *ngFor="let b of filteredBudgets">
+                  <td class="small fw-medium text-capitalize">
+                    <i class="bi bi-tag me-1 text-muted"></i>{{ b.category }}
+                  </td>
+                  <td>
+                    <span class="badge bg-primary bg-opacity-10 text-primary small">
+                      {{ b.month }}
+                    </span>
+                  </td>
+                  <td class="small fw-semibold text-end">
+                    £{{ b.limit | number:'1.2-2' }}
+                  </td>
                   <td class="text-center">
                     <div class="d-flex gap-1 justify-content-center">
                       <button class="btn btn-outline-warning btn-sm py-0"

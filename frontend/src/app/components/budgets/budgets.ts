@@ -13,6 +13,7 @@ import { AuthService } from '../../services/auth';
 })
 export class BudgetsComponent implements OnInit {
   budgets: any[] = [];
+  filteredBudgets: any[] = [];
   analysis: any = null;
   loading = false;
   showForm = false;
@@ -20,7 +21,9 @@ export class BudgetsComponent implements OnInit {
   submitting = false;
   error = '';
   success = '';
-  selectedMonth = new Date().toISOString().slice(0, 7);
+  selectedMonth = '';
+  selectedYear = '';
+  selectedMonthNum = '';
 
   form = {
     category: '',
@@ -47,19 +50,17 @@ export class BudgetsComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    setTimeout(() => {
-      this.loadBudgets();
-      this.loadAnalysis();
-    }, 0);
+    setTimeout(() => this.loadBudgets(), 0);
   }
 
   loadBudgets() {
     this.loading = true;
     this.cdr.detectChanges();
-    this.budgetService.getAll(this.selectedMonth).subscribe({
+    this.budgetService.getAll().subscribe({
       next: (res: any) => {
-        this.budgets = res || [];
-        this.loading = false;
+        this.budgets         = res || [];
+        this.filteredBudgets = res || [];
+        this.loading         = false;
         this.cdr.detectChanges();
       },
       error: () => {
@@ -69,7 +70,44 @@ export class BudgetsComponent implements OnInit {
     });
   }
 
+  onMonthChange() {
+    if (this.selectedMonth) {
+      this.filteredBudgets = this.budgets.filter(b => b.month === this.selectedMonth);
+      this.loadAnalysis();
+    } else {
+      this.filteredBudgets = this.budgets;
+      this.analysis        = null;
+    }
+    this.cdr.detectChanges();
+  }
+
+  onYearMonthChange() {
+    if (this.selectedYear && this.selectedMonthNum) {
+      this.selectedMonth = `${this.selectedYear}-${this.selectedMonthNum}`;
+      this.filteredBudgets = this.budgets.filter(b => b.month === this.selectedMonth);
+      this.loadAnalysis();
+    } else if (this.selectedYear) {
+      this.selectedMonth   = '';
+      this.filteredBudgets = this.budgets.filter(b =>
+        b.month?.startsWith(this.selectedYear)
+      );
+      this.analysis = null;
+    } else if (this.selectedMonthNum) {
+      this.selectedMonth   = '';
+      this.filteredBudgets = this.budgets.filter(b =>
+        b.month?.endsWith(`-${this.selectedMonthNum}`)
+      );
+      this.analysis = null;
+    } else {
+      this.selectedMonth   = '';
+      this.filteredBudgets = this.budgets;
+      this.analysis        = null;
+    }
+    this.cdr.detectChanges();
+  }
+
   loadAnalysis() {
+    if (!this.selectedMonth) return;
     this.analytics.getBudgetAnalysis(this.selectedMonth).subscribe({
       next: (res: any) => {
         this.analysis = res;
@@ -79,22 +117,15 @@ export class BudgetsComponent implements OnInit {
     });
   }
 
-  onMonthChange() {
-    this.loadBudgets();
-    this.loadAnalysis();
-  }
-
   onSubmit() {
     this.submitting = true;
     this.error = '';
-    const data = { ...this.form, month: this.selectedMonth };
-    this.budgetService.create(data).subscribe({
+    this.budgetService.create(this.form).subscribe({
       next: () => {
         this.success  = 'Budget saved successfully!';
         this.showForm = false;
         this.resetForm();
         this.loadBudgets();
-        this.loadAnalysis();
         this.submitting = false;
         setTimeout(() => this.success = '', 3000);
       },
@@ -106,35 +137,34 @@ export class BudgetsComponent implements OnInit {
   }
 
   startEdit(b: any) {
-    this.editingBudget = b;
-    this.showForm      = false;
-    this.editForm      = {
-      category: b.category,
-      limit:    b.limit,
-      month:    b.month
-    };
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+  this.editingBudget = b;
+  this.showForm      = false;
+  this.editForm      = {
+    category: b.category || '',
+    limit:    b.limit    || 0,
+    month:    b.month    || ''
+  };
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-  onEdit() {
-    if (!this.editingBudget) return;
-    this.submitting = true;
-    this.error = '';
-    this.budgetService.update(this.editingBudget.id, this.editForm).subscribe({
-      next: () => {
-        this.success       = 'Budget updated successfully!';
-        this.editingBudget = null;
-        this.loadBudgets();
-        this.loadAnalysis();
-        this.submitting = false;
-        setTimeout(() => this.success = '', 3000);
-      },
-      error: (err: any) => {
-        this.error      = err.error?.error || 'Failed to update budget';
-        this.submitting = false;
-      }
-    });
-  }
+onEdit() {
+  if (!this.editingBudget) return;
+  this.submitting = true;
+  this.error = '';
+  this.budgetService.update(this.editingBudget.id, this.editForm).subscribe({
+    next: () => {
+      this.success       = 'Budget updated successfully!';
+      this.editingBudget = null;
+      this.loadBudgets();
+      this.submitting = false;
+      setTimeout(() => this.success = '', 3000);
+    },
+    error: (err: any) => {
+      this.error      = err.error?.error || 'Failed to update budget';
+      this.submitting = false;
+    }
+  });
+}
 
   deleteBudget(id: string) {
     if (!confirm('Delete this budget?')) return;
@@ -142,13 +172,21 @@ export class BudgetsComponent implements OnInit {
       next: () => {
         this.success = 'Budget deleted!';
         this.loadBudgets();
-        this.loadAnalysis();
         setTimeout(() => this.success = '', 3000);
       },
       error: (err: any) => {
         this.error = err.error?.error || 'Failed to delete budget';
       }
     });
+  }
+
+  clearFilter() {
+    this.selectedMonth    = '';
+    this.selectedYear     = '';
+    this.selectedMonthNum = '';
+    this.filteredBudgets  = this.budgets;
+    this.analysis         = null;
+    this.cdr.detectChanges();
   }
 
   getProgressWidth(spent: number, limit: number) {
@@ -162,8 +200,17 @@ export class BudgetsComponent implements OnInit {
     return 'bg-success';
   }
 
+  get uniqueMonths() {
+    return [...new Set(this.budgets.map(b => b.month))].sort().reverse();
+  }
+
+  get availableYears() {
+    const years = [...new Set(this.budgets.map((b: any) => b.month?.split('-')[0]))];
+    return years.sort().reverse();
+  }
+
   resetForm() {
-    this.form = { category: '', limit: 0, month: this.selectedMonth };
+    this.form = { category: '', limit: 0, month: new Date().toISOString().slice(0, 7) };
   }
 
   logout() { this.auth.logout(); }

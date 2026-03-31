@@ -30,4 +30,4 @@ export class App implements OnInit {
       this.loggedIn = !!user;
     });
   }
-}
+} 

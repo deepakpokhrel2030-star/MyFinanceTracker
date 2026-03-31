@@ -115,12 +115,59 @@ def budget_analysis(yyyymm):
     })
 
 
+@bp.put("/<budget_id>")
+@jwt_required
+def update_budget(budget_id):
+    uid  = get_current_user_id()
+    bid  = parse_objectid(budget_id)
+    if not bid:
+        return bad_request("invalid id — must be 24-character hex string")
+
+    data    = request.get_json() or {}
+    allowed = {}
+
+    if "limit" in data:
+        try:
+            limit = float(data["limit"])
+            if limit < 0:
+                return bad_request("limit must be a positive number")
+            allowed["limit"] = limit
+        except Exception:
+            return bad_request("limit must be a number")
+
+    if "category" in data:
+        allowed["category"] = data["category"].strip().lower()
+
+    if "month" in data:
+        try:
+            datetime.strptime(data["month"], "%Y-%m")
+            allowed["month"] = data["month"]
+        except Exception:
+            return bad_request("month must be YYYY-MM format e.g. 2024-01")
+
+    if "currency" in data:
+        allowed["currency"] = data["currency"].strip().upper()
+
+    if not allowed:
+        return bad_request("no updatable fields provided")
+
+    res = ext.mongo.budgets.update_one(
+        {"_id": bid, "user_id": uid},
+        {"$set": allowed}
+    )
+    if res.matched_count == 0:
+        return not_found("budget not found")
+
+    return ok({"updated": True})
+
+
 @bp.delete("/<budget_id>")
 @jwt_required
 def delete_budget(budget_id):
     uid = get_current_user_id()
     bid = parse_objectid(budget_id)
-    if not bid: return bad_request("invalid id — must be 24-character hex string")
+    if not bid:
+        return bad_request("invalid id — must be 24-character hex string")
 
     res = ext.mongo.budgets.delete_one({"_id": bid, "user_id": uid})
     if res.deleted_count == 0:
