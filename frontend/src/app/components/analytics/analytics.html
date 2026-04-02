@@ -13,7 +13,7 @@
 
     <div *ngIf="!loading">
 
-      <!-- Income vs Expense Summary -->
+      <!-- Income vs Expense Summary Cards -->
       <div class="row g-3 mb-4">
         <div class="col-12 col-sm-6 col-xl-3">
           <div class="card border-0 shadow-sm text-center h-100">
@@ -54,7 +54,7 @@
               <h5 class="fw-bold mb-0"
                 [class.text-success]="incomeVsExpense?.net >= 0"
                 [class.text-danger]="incomeVsExpense?.net < 0">
-                £{{ incomeVsExpense?.net | number:'1.2-2' }}
+                {{ incomeVsExpense?.net >= 0 ? '+' : '' }}£{{ incomeVsExpense?.net | number:'1.2-2' }}
               </h5>
             </div>
           </div>
@@ -81,7 +81,7 @@
           <h6 class="fw-semibold mb-3">
             <i class="bi bi-calendar3 me-2 text-primary"></i>Monthly income vs expenses
           </h6>
-          <div *ngIf="incomeVsExpense?.monthly?.length === 0" class="text-center py-3">
+          <div *ngIf="!incomeVsExpense?.monthly?.length" class="text-center py-3">
             <p class="text-muted small mb-0">No monthly data yet</p>
           </div>
           <div class="table-responsive">
@@ -108,7 +108,7 @@
                     {{ m.net >= 0 ? '+' : '' }}£{{ m.net | number:'1.2-2' }}
                   </td>
                   <td>
-                    <div class="progress" style="height:6px; width:100px;">
+                    <div class="progress" style="height:6px;width:100px;">
                       <div class="progress-bar"
                         [class.bg-success]="m.net >= 0"
                         [class.bg-danger]="m.net < 0"
@@ -123,7 +123,7 @@
         </div>
       </div>
 
-      <!-- Top Spending Categories -->
+      <!-- Top Categories + Monthly Spending -->
       <div class="row g-3 mb-4">
         <div class="col-12 col-lg-6">
           <div class="card border-0 shadow-sm h-100">
@@ -137,12 +137,12 @@
               <div *ngFor="let cat of topCategories; let i = index" class="mb-3">
                 <div class="d-flex justify-content-between small mb-1">
                   <span class="text-capitalize fw-medium">
-                    <span class="badge me-1 bg-primary" style="font-size:0.65rem;">{{ i + 1 }}</span>
+                    <span class="badge bg-primary me-1" style="font-size:0.65rem;">{{ i + 1 }}</span>
                     {{ cat.category }}
                   </span>
                   <div class="text-end">
                     <span class="fw-semibold">£{{ cat.total | number:'1.2-2' }}</span>
-                    <span class="text-muted ms-1">({{ cat.count }} txns)</span>
+                    <span class="text-muted ms-1 small">({{ cat.count }} txns)</span>
                   </div>
                 </div>
                 <div class="progress" style="height:8px;">
@@ -155,7 +155,6 @@
           </div>
         </div>
 
-        <!-- Monthly Spending Summary -->
         <div class="col-12 col-lg-6">
           <div class="card border-0 shadow-sm h-100">
             <div class="card-body">
@@ -201,20 +200,45 @@
             <h6 class="fw-semibold mb-0">
               <i class="bi bi-bullseye me-2 text-danger"></i>Budget vs actual spending
             </h6>
-            <input type="month" class="form-control form-control-sm"
-              style="width:160px;"
-              [(ngModel)]="selectedMonth"
-              (change)="onMonthChange()" />
+            <div class="d-flex gap-2">
+              <select class="form-select form-select-sm" style="width:110px;"
+                [(ngModel)]="selectedYear"
+                (change)="onYearMonthChange()">
+                <option value="">Year</option>
+                <option *ngFor="let y of availableYears" [value]="y">{{ y }}</option>
+              </select>
+              <select class="form-select form-select-sm" style="width:130px;"
+                [(ngModel)]="selectedMonthNum"
+                (change)="onYearMonthChange()">
+                <option value="">Month</option>
+                <option value="01">January</option>
+                <option value="02">February</option>
+                <option value="03">March</option>
+                <option value="04">April</option>
+                <option value="05">May</option>
+                <option value="06">June</option>
+                <option value="07">July</option>
+                <option value="08">August</option>
+                <option value="09">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+              </select>
+            </div>
           </div>
 
           <div *ngIf="budgetAnalysis" class="row g-3 mb-3">
             <div class="col-4 text-center">
               <p class="text-muted small mb-1">Total budget</p>
-              <h6 class="fw-bold text-primary mb-0">£{{ budgetAnalysis.total_limit | number:'1.2-2' }}</h6>
+              <h6 class="fw-bold text-primary mb-0">
+                £{{ budgetAnalysis.total_limit | number:'1.2-2' }}
+              </h6>
             </div>
             <div class="col-4 text-center">
               <p class="text-muted small mb-1">Total spent</p>
-              <h6 class="fw-bold text-danger mb-0">£{{ budgetAnalysis.total_spent | number:'1.2-2' }}</h6>
+              <h6 class="fw-bold text-danger mb-0">
+                £{{ budgetAnalysis.total_spent | number:'1.2-2' }}
+              </h6>
             </div>
             <div class="col-4 text-center">
               <p class="text-muted small mb-1">Remaining</p>
@@ -247,7 +271,8 @@
               </div>
               <div class="d-flex justify-content-between" style="font-size:0.7rem;">
                 <span class="text-muted">{{ item.pct_used }}% used</span>
-                <span [class.text-danger]="item.status === 'over'"
+                <span
+                  [class.text-danger]="item.status === 'over'"
                   [class.text-success]="item.status === 'ok'">
                   {{ item.status === 'over'
                     ? '£' + item.over + ' over budget'
@@ -258,7 +283,9 @@
           </div>
 
           <div *ngIf="!budgetAnalysis?.items?.length" class="text-center py-3">
-            <p class="text-muted small mb-0">No budget data for {{ selectedMonth }}</p>
+            <p class="text-muted small mb-0">
+              No budget data for {{ selectedMonth }}
+            </p>
           </div>
         </div>
       </div>
@@ -340,6 +367,10 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <div *ngIf="!portfolioValue?.assets?.length" class="text-center py-3">
+            <p class="text-muted small mb-0">No investment data yet</p>
           </div>
         </div>
       </div>

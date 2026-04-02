@@ -16,9 +16,11 @@ export class AnalyticsComponent implements OnInit {
   topCategories: any[] = [];
   incomeVsExpense: any = null;
   portfolioValue: any = null;
+  budgetAnalysis: any = null;
   loading = false;
   selectedMonth = new Date().toISOString().slice(0, 7);
-  budgetAnalysis: any = null;
+  selectedYear = new Date().getFullYear().toString();
+  selectedMonthNum = String(new Date().getMonth() + 1).padStart(2, '0');
 
   constructor(
     private analytics: AnalyticsService,
@@ -41,11 +43,11 @@ export class AnalyticsComponent implements OnInit {
       portfolio:  this.analytics.getPortfolioValue()
     }).subscribe({
       next: (res: any) => {
-        this.monthlySpending  = res.monthly?.data  || res.monthly  || [];
-        this.topCategories    = res.categories      || [];
-        this.incomeVsExpense  = res.income;
-        this.portfolioValue   = res.portfolio;
-        this.loading          = false;
+        this.monthlySpending = Array.isArray(res.monthly)    ? res.monthly    : [];
+        this.topCategories   = Array.isArray(res.categories) ? res.categories : [];
+        this.incomeVsExpense = res.income;
+        this.portfolioValue  = res.portfolio;
+        this.loading         = false;
         this.cdr.detectChanges();
         this.loadBudgetAnalysis();
       },
@@ -57,6 +59,7 @@ export class AnalyticsComponent implements OnInit {
   }
 
   loadBudgetAnalysis() {
+    if (!this.selectedMonth) return;
     this.analytics.getBudgetAnalysis(this.selectedMonth).subscribe({
       next: (res: any) => {
         this.budgetAnalysis = res;
@@ -66,8 +69,24 @@ export class AnalyticsComponent implements OnInit {
     });
   }
 
-  onMonthChange() {
+  onYearMonthChange() {
+    if (this.selectedYear && this.selectedMonthNum) {
+      this.selectedMonth = `${this.selectedYear}-${this.selectedMonthNum}`;
+    } else if (this.selectedYear) {
+      this.selectedMonth = `${this.selectedYear}-01`;
+    } else {
+      this.selectedMonth = new Date().toISOString().slice(0, 7);
+    }
     this.loadBudgetAnalysis();
+  }
+
+  get availableYears() {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let y = currentYear; y >= currentYear - 5; y--) {
+      years.push(y.toString());
+    }
+    return years;
   }
 
   getProgressWidth(spent: number, limit: number) {
