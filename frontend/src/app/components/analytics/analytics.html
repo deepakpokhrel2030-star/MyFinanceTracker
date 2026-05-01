@@ -1,0 +1,659 @@
+<div class="analytics-page">
+
+  <section class="analytics-hero">
+    <button
+      *ngIf="activeSection !== 'overview'"
+      class="analytics-back-btn"
+      type="button"
+      routerLink="/analytics"
+      aria-label="Back to analytics"
+    >
+      <i class="bi bi-arrow-left"></i>
+    </button>
+
+    <span class="eyebrow">Financial Intelligence</span>
+
+    <ng-container [ngSwitch]="activeSection">
+      <h1 *ngSwitchCase="'overview'">Analytics Centre</h1>
+      <h1 *ngSwitchCase="'monthly'">Monthly Report</h1>
+      <h1 *ngSwitchCase="'categories'">Category Report</h1>
+      <h1 *ngSwitchCase="'budgets'">Budget Report</h1>
+      <h1 *ngSwitchDefault>Investment Report</h1>
+    </ng-container>
+
+    <p *ngIf="activeSection === 'overview'">Trends, risks and performance reports.</p>
+    <p *ngIf="activeSection !== 'overview'">Detailed analytics report.</p>
+  </section>
+
+  <div *ngIf="loading" class="loading-card">
+    <div class="spinner-border text-primary"></div>
+    <p>Loading analytics...</p>
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <!-- OVERVIEW -->
+    <ng-container *ngIf="activeSection === 'overview'">
+
+      <section class="health-panel">
+        <div class="health-main">
+          <span>Health score</span>
+          <h2 *ngIf="hasEnoughData">{{ financialHealthScore }}</h2>
+          <h2 *ngIf="!hasEnoughData">—</h2>
+          <p>{{ hasEnoughData ? financialHealthLabel : 'No data yet' }}</p>
+
+          <div class="health-track">
+            <div [style.width.%]="hasEnoughData ? financialHealthScore : 0"></div>
+          </div>
+        </div>
+
+        <div class="health-breakdown-card">
+          <span>How this score is calculated</span>
+
+          <div *ngIf="!hasEnoughData" class="score-no-data">
+            <p>Add transactions, budgets or investments to generate your financial health score.</p>
+          </div>
+
+          <div *ngIf="hasEnoughData" class="score-breakdown">
+            <div>
+              <p>Savings & Goals</p>
+              <strong>{{ healthSavingsPoints }}<small>/25</small></strong>
+            </div>
+
+            <div>
+              <p>Budget</p>
+              <strong>{{ healthBudgetPoints }}<small>/25</small></strong>
+            </div>
+
+            <div>
+              <p>Investments</p>
+              <strong>{{ healthInvestmentPoints }}<small>/25</small></strong>
+            </div>
+
+            <div>
+              <p>Consistency</p>
+              <strong>{{ healthConsistencyPoints }}<small>/25</small></strong>
+            </div>
+          </div>
+
+          <p *ngIf="hasEnoughData" class="score-note">{{ insightMessage }}</p>
+        </div>
+      </section>
+
+      <section class="report-grid">
+        <article class="report-card monthly-report clickable-card" routerLink="/analytics/monthly">
+          <span>Trend</span>
+          <h3>Monthly</h3>
+          <strong>Open →</strong>
+        </article>
+
+        <article class="report-card category-report clickable-card" routerLink="/analytics/categories">
+          <span>Breakdown</span>
+          <h3>Categories</h3>
+          <strong>Open →</strong>
+        </article>
+
+        <article class="report-card budget-report clickable-card" routerLink="/analytics/budgets">
+          <span>Risk</span>
+          <h3>Budgets</h3>
+          <strong>Open →</strong>
+        </article>
+
+        <article class="report-card investment-report clickable-card" routerLink="/analytics/investments">
+          <span>Performance</span>
+          <h3>Investments</h3>
+          <strong>Open →</strong>
+        </article>
+      </section>
+
+      <section class="overview-kpi-grid">
+        <article>
+          <span>Savings rate</span>
+          <strong>{{ savingsRate | number:'1.0-0' }}%</strong>
+        </article>
+
+        <article>
+          <span>Average net</span>
+          <strong [class.good-text]="averageNet >= 0" [class.bad-text]="averageNet < 0">
+            {{ averageNet >= 0 ? '+' : '' }}£{{ averageNet | number:'1.2-2' }}
+          </strong>
+        </article>
+
+        <article>
+          <span>Budget risk</span>
+          <strong [class]="budgetRiskClass">{{ budgetRiskLabel }}</strong>
+        </article>
+
+        <article>
+          <span>Portfolio return</span>
+          <strong [class.good-text]="portfolioReturnPct >= 0" [class.bad-text]="portfolioReturnPct < 0">
+            {{ portfolioReturnPct >= 0 ? '+' : '' }}{{ portfolioReturnPct | number:'1.2-2' }}%
+          </strong>
+        </article>
+      </section>
+
+      <section class="analytics-grid">
+
+        <article class="analytics-card wide clickable-card" routerLink="/analytics/monthly">
+          <div class="title-row">
+            <div>
+              <h3>Monthly trend</h3>
+              <p>Income, expenses and net</p>
+            </div>
+            <a routerLink="/analytics/monthly" (click)="$event.stopPropagation()">View report</a>
+          </div>
+
+          <div *ngIf="monthlyChartData.length === 0" class="empty-state">
+            No monthly financial data yet.
+          </div>
+
+          <div *ngIf="monthlyChartData.length > 0" class="triple-chart">
+            <div *ngFor="let m of monthlyChartData.slice(-10); trackBy: trackByMonth" class="triple-group">
+              <div class="triple-bars">
+                <div class="bar-item">
+                  <small>£{{ m.income | number:'1.0-0' }}</small>
+                  <span class="income-bar" [style.height.%]="barHeight(m.income)"></span>
+                </div>
+
+                <div class="bar-item">
+                  <small>£{{ (m.expense || m.expenses) | number:'1.0-0' }}</small>
+                  <span class="expense-bar" [style.height.%]="barHeight(m.expense || m.expenses)"></span>
+                </div>
+
+                <div class="bar-item">
+                  <small>£{{ netForMonth(m) | number:'1.0-0' }}</small>
+                  <span
+                    class="net-bar"
+                    [class.negative-net]="netForMonth(m) < 0"
+                    [style.height.%]="netBarHeight(m)">
+                  </span>
+                </div>
+              </div>
+
+              <strong>{{ shortMonthLabel(m) }}</strong>
+            </div>
+          </div>
+
+          <div class="legend">
+            <span><i class="income-dot"></i>Income</span>
+            <span><i class="expense-dot"></i>Expenses</span>
+            <span><i class="net-dot"></i>Net</span>
+          </div>
+        </article>
+
+        <article class="analytics-card clickable-card" routerLink="/analytics/categories">
+          <div class="title-row">
+            <div>
+              <h3>Top categories</h3>
+              <p>Largest spending areas</p>
+            </div>
+            <a routerLink="/analytics/categories" (click)="$event.stopPropagation()">View report</a>
+          </div>
+
+          <div *ngIf="topCategories.length === 0" class="empty-state">
+            No category data yet.
+          </div>
+
+          <div *ngFor="let cat of topCategories.slice(0,5); let i = index; trackBy: trackByCategory" class="rank-row">
+            <div class="rank-label">
+              <span>{{ i + 1 }}</span>
+              <p>{{ cat.category }}</p>
+              <strong>£{{ cat.total | number:'1.2-2' }}</strong>
+            </div>
+
+            <div class="rank-track">
+              <div [style.width.%]="categoryPercent(cat.total)"></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="analytics-card clickable-card" routerLink="/analytics/budgets">
+          <div class="title-row">
+            <div>
+              <h3>Budget status</h3>
+              <p>{{ selectedMonth }}</p>
+            </div>
+            <a routerLink="/analytics/budgets" (click)="$event.stopPropagation()">View report</a>
+          </div>
+
+          <div class="risk-summary" [class]="budgetRiskClass">
+            <strong>{{ budgetRiskLabel }}</strong>
+            <span *ngIf="hasBudgetData">{{ budgetUsedPct | number:'1.0-0' }}% used</span>
+            <span *ngIf="!hasBudgetData">No budget data</span>
+          </div>
+
+          <div class="budget-track large-track" *ngIf="hasBudgetData">
+            <div [class]="getProgressColor(budgetUsedPct)" [style.width.%]="budgetUsedPct"></div>
+          </div>
+
+          <p class="risk-note">
+            Highest pressure:
+            <strong>{{ highestBudgetItem?.category || 'No data' }}</strong>
+          </p>
+        </article>
+
+        <article class="analytics-card wide clickable-card" routerLink="/analytics/investments">
+          <div class="title-row">
+            <div>
+              <h3>Portfolio performance</h3>
+              <p>Return and profit/loss</p>
+            </div>
+            <a routerLink="/analytics/investments" (click)="$event.stopPropagation()">View report</a>
+          </div>
+
+          <div class="investment-overview-card">
+            <div>
+              <span>Invested</span>
+              <strong>£{{ portfolioInvested | number:'1.2-2' }}</strong>
+            </div>
+
+            <div>
+              <span>Value</span>
+              <strong>£{{ portfolioTotal | number:'1.2-2' }}</strong>
+            </div>
+
+            <div>
+              <span>P/L</span>
+              <strong [class.good-text]="portfolioProfitLoss >= 0" [class.bad-text]="portfolioProfitLoss < 0">
+                {{ portfolioProfitLoss >= 0 ? '+' : '' }}£{{ portfolioProfitLoss | number:'1.2-2' }}
+              </strong>
+            </div>
+
+            <div>
+              <span>Return</span>
+              <strong [class.good-text]="portfolioReturnPct >= 0" [class.bad-text]="portfolioReturnPct < 0">
+                {{ portfolioReturnPct >= 0 ? '+' : '' }}{{ portfolioReturnPct | number:'1.2-2' }}%
+              </strong>
+            </div>
+          </div>
+
+          <div class="return-meter">
+            <span [style.width.%]="portfolioReturnWidth"></span>
+          </div>
+        </article>
+
+      </section>
+
+    </ng-container>
+
+    <!-- MONTHLY DETAIL -->
+    <section *ngIf="activeSection === 'monthly'" class="analytics-card wide detail-page-card">
+
+      <div class="detail-metric-grid">
+        <div>
+          <p>Total income</p>
+          <strong>£{{ totalIncome | number:'1.2-2' }}</strong>
+        </div>
+
+        <div>
+          <p>Total expenses</p>
+          <strong>£{{ totalExpense | number:'1.2-2' }}</strong>
+        </div>
+
+        <div>
+          <p>Net savings</p>
+          <strong [class.good-text]="netSavings >= 0" [class.bad-text]="netSavings < 0">
+            {{ netSavings >= 0 ? '+' : '' }}£{{ netSavings | number:'1.2-2' }}
+          </strong>
+        </div>
+
+        <div>
+          <p>Average income</p>
+          <strong>£{{ averageIncome | number:'1.2-2' }}</strong>
+        </div>
+
+        <div>
+          <p>Average expense</p>
+          <strong>£{{ averageExpense | number:'1.2-2' }}</strong>
+        </div>
+
+        <div>
+          <p>Average net</p>
+          <strong [class.good-text]="averageNet >= 0" [class.bad-text]="averageNet < 0">
+            {{ averageNet >= 0 ? '+' : '' }}£{{ averageNet | number:'1.2-2' }}
+          </strong>
+        </div>
+      </div>
+
+      <div class="compact-insight-grid">
+        <article>
+          <span>Best month</span>
+          <strong>{{ bestMonth ? monthLabel(bestMonth) : 'No data' }}</strong>
+          <p *ngIf="bestMonth">£{{ netForMonth(bestMonth) | number:'1.2-2' }} net</p>
+        </article>
+
+        <article>
+          <span>Weakest month</span>
+          <strong>{{ weakestMonth ? monthLabel(weakestMonth) : 'No data' }}</strong>
+          <p *ngIf="weakestMonth">£{{ netForMonth(weakestMonth) | number:'1.2-2' }} net</p>
+        </article>
+
+        <article>
+          <span>Savings rate</span>
+          <strong>{{ savingsRate | number:'1.0-0' }}%</strong>
+          <p>Income kept</p>
+        </article>
+
+        <article>
+          <span>Spending rate</span>
+          <strong>{{ spendingRate | number:'1.0-0' }}%</strong>
+          <p>Income spent</p>
+        </article>
+      </div>
+
+      <div *ngIf="monthlyChartData.length > 0" class="detail-chart-card">
+        <div class="detail-chart-header">
+          <h3>Income, expense and net trend</h3>
+          <p>Each bar shows the exact amount above it.</p>
+        </div>
+
+        <div class="triple-chart detail-triple-chart">
+          <div *ngFor="let m of monthlyChartData; trackBy: trackByMonth" class="triple-group">
+            <div class="triple-bars">
+              <div class="bar-item">
+                <small>£{{ m.income | number:'1.0-0' }}</small>
+                <span class="income-bar" [style.height.%]="barHeight(m.income)"></span>
+              </div>
+
+              <div class="bar-item">
+                <small>£{{ (m.expense || m.expenses) | number:'1.0-0' }}</small>
+                <span class="expense-bar" [style.height.%]="barHeight(m.expense || m.expenses)"></span>
+              </div>
+
+              <div class="bar-item">
+                <small>£{{ netForMonth(m) | number:'1.0-0' }}</small>
+                <span
+                  class="net-bar"
+                  [class.negative-net]="netForMonth(m) < 0"
+                  [style.height.%]="netBarHeight(m)">
+                </span>
+              </div>
+            </div>
+
+            <strong>{{ shortMonthLabel(m) }}</strong>
+          </div>
+        </div>
+
+        <div class="legend">
+          <span><i class="income-dot"></i>Income</span>
+          <span><i class="expense-dot"></i>Expenses</span>
+          <span><i class="net-dot"></i>Net</span>
+        </div>
+      </div>
+
+      <div class="report-table-wrap">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Income</th>
+              <th>Expense</th>
+              <th>Net</th>
+              <th>Savings Rate</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let m of monthlyChartData; trackBy: trackByMonth">
+              <td>{{ monthLabel(m) }}</td>
+              <td>£{{ m.income | number:'1.2-2' }}</td>
+              <td>£{{ (m.expense || m.expenses) | number:'1.2-2' }}</td>
+              <td [class.good-text]="netForMonth(m) >= 0" [class.bad-text]="netForMonth(m) < 0">
+                £{{ netForMonth(m) | number:'1.2-2' }}
+              </td>
+              <td>{{ m.income ? ((netForMonth(m) / m.income) * 100 | number:'1.0-0') : 0 }}%</td>
+              <td>
+                <span
+                  class="status-pill"
+                  [class.status-good]="netForMonth(m) >= 0"
+                  [class.status-bad]="netForMonth(m) < 0">
+                  {{ netForMonth(m) >= 0 ? 'Positive' : 'Overspent' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+    <!-- CATEGORIES DETAIL -->
+    <section *ngIf="activeSection === 'categories'" class="analytics-card wide detail-page-card">
+
+      <div class="detail-metric-grid three">
+        <div>
+          <p>Total category spend</p>
+          <strong>£{{ totalCategorySpend | number:'1.2-2' }}</strong>
+        </div>
+
+        <div>
+          <p>Tracked categories</p>
+          <strong>{{ topCategories.length }}</strong>
+        </div>
+
+        <div>
+          <p>Largest category</p>
+          <strong>{{ strongestCategory?.category || 'No data' }}</strong>
+        </div>
+      </div>
+
+      <div *ngIf="topCategories.length === 0" class="empty-state">
+        No category data yet.
+      </div>
+
+      <div *ngIf="topCategories.length > 0" class="category-report-layout">
+        <article class="category-donut-panel">
+          <div
+            class="donut large-donut"
+            [style.background]="'conic-gradient(#2563eb 0 ' + categoryShare(topCategories[0]?.total) + '%, #22c55e 0 ' + (categoryShare(topCategories[0]?.total)+categoryShare(topCategories[1]?.total)) + '%, #f59e0b 0 ' + (categoryShare(topCategories[0]?.total)+categoryShare(topCategories[1]?.total)+categoryShare(topCategories[2]?.total)) + '%, #e2e8f0 0)'">
+            <div>
+              <strong>{{ topCategories.length }}</strong>
+              <span>groups</span>
+            </div>
+          </div>
+
+          <p>
+            Largest spending area:
+            <strong>{{ strongestCategory?.category }}</strong>
+          </p>
+        </article>
+
+        <article class="category-detail-grid">
+          <div *ngFor="let cat of topCategories; let i = index; trackBy: trackByCategory" class="category-detail-card">
+            <div class="rank-label">
+              <span>{{ i + 1 }}</span>
+              <p>{{ cat.category }}</p>
+              <strong>£{{ cat.total | number:'1.2-2' }}</strong>
+            </div>
+
+            <div class="rank-track">
+              <div [style.width.%]="categoryPercent(cat.total)"></div>
+            </div>
+
+            <small>{{ categoryShare(cat.total) | number:'1.1-1' }}% of tracked category spend</small>
+          </div>
+        </article>
+      </div>
+
+    </section>
+
+    <!-- BUDGET DETAIL -->
+    <section *ngIf="activeSection === 'budgets'" class="analytics-card wide detail-page-card">
+
+      <div class="selectors detail-selectors">
+        <select [(ngModel)]="selectedYear" (change)="onYearMonthChange()">
+          <option *ngFor="let y of availableYears; trackBy: trackByYear" [value]="y">{{ y }}</option>
+        </select>
+
+        <select [(ngModel)]="selectedMonthNum" (change)="onYearMonthChange()">
+          <option value="01">Jan</option>
+          <option value="02">Feb</option>
+          <option value="03">Mar</option>
+          <option value="04">Apr</option>
+          <option value="05">May</option>
+          <option value="06">Jun</option>
+          <option value="07">Jul</option>
+          <option value="08">Aug</option>
+          <option value="09">Sep</option>
+          <option value="10">Oct</option>
+          <option value="11">Nov</option>
+          <option value="12">Dec</option>
+        </select>
+      </div>
+
+      <div class="detail-metric-grid">
+        <div>
+          <p>Total budget</p>
+          <strong>£{{ budgetLimit | number:'1.2-2' }}</strong>
+        </div>
+
+        <div>
+          <p>Total spent</p>
+          <strong>£{{ budgetSpent | number:'1.2-2' }}</strong>
+        </div>
+
+        <div>
+          <p>Remaining</p>
+          <strong [class.good-text]="budgetRemaining >= 0" [class.bad-text]="budgetRemaining < 0">
+            £{{ budgetRemaining | number:'1.2-2' }}
+          </strong>
+        </div>
+
+        <div>
+          <p>Used</p>
+          <strong>{{ budgetUsedPct | number:'1.0-0' }}%</strong>
+        </div>
+
+        <div>
+          <p>Risk</p>
+          <strong [class]="budgetRiskClass">{{ budgetRiskLabel }}</strong>
+        </div>
+
+        <div>
+          <p>Pressure</p>
+          <strong>{{ highestBudgetItem?.category || 'No data' }}</strong>
+        </div>
+      </div>
+
+      <div class="budget-overall-card" *ngIf="hasBudgetData">
+        <div class="budget-label">
+          <p>Overall budget usage</p>
+          <span>{{ budgetUsedPct | number:'1.0-0' }}%</span>
+        </div>
+
+        <div class="budget-track large-track">
+          <div [class]="getProgressColor(budgetUsedPct)" [style.width.%]="budgetUsedPct"></div>
+        </div>
+      </div>
+
+      <div *ngIf="!budgetAnalysis?.items?.length" class="empty-state">
+        No budget data available for this month.
+      </div>
+
+      <div *ngFor="let item of budgetAnalysis?.items; trackBy: trackById" class="budget-row full-budget-row">
+        <div class="budget-label">
+          <p>{{ item.category }}</p>
+          <span>£{{ item.spent | number:'1.2-2' }} / £{{ item.limit | number:'1.2-2' }}</span>
+        </div>
+
+        <div class="budget-track">
+          <div [class]="getProgressColor(item.pct_used)" [style.width.%]="getProgressWidth(item.spent, item.limit)"></div>
+        </div>
+
+        <small>{{ item.pct_used | number:'1.0-0' }}% used</small>
+      </div>
+
+    </section>
+
+    <!-- INVESTMENTS DETAIL -->
+    <section *ngIf="activeSection === 'investments'" class="analytics-card wide detail-page-card">
+
+      <div class="investment-hero-card">
+        <div>
+          <span>Portfolio value</span>
+          <h2>£{{ portfolioTotal | number:'1.2-2' }}</h2>
+          <p>Invested: £{{ portfolioInvested | number:'1.2-2' }}</p>
+        </div>
+
+        <div class="investment-return-box">
+          <span>Return</span>
+          <strong [class.good-text]="portfolioReturnPct >= 0" [class.bad-text]="portfolioReturnPct < 0">
+            {{ portfolioReturnPct >= 0 ? '+' : '' }}{{ portfolioReturnPct | number:'1.2-2' }}%
+          </strong>
+          <p [class.good-text]="portfolioProfitLoss >= 0" [class.bad-text]="portfolioProfitLoss < 0">
+            {{ portfolioProfitLoss >= 0 ? '+' : '' }}£{{ portfolioProfitLoss | number:'1.2-2' }}
+          </p>
+        </div>
+      </div>
+
+      <div class="compact-insight-grid">
+        <article>
+          <span>Assets</span>
+          <strong>{{ investmentAssetCount }}</strong>
+          <p>Tracked holdings</p>
+        </article>
+
+        <article>
+          <span>Largest</span>
+          <strong>{{ largestAsset?.symbol || largestAsset?.name || 'No data' }}</strong>
+          <p *ngIf="largestAsset">£{{ assetValue(largestAsset) | number:'1.2-2' }}</p>
+        </article>
+
+        <article>
+          <span>Best performer</span>
+          <strong>{{ bestAsset?.symbol || bestAsset?.name || 'No data' }}</strong>
+          <p *ngIf="bestAsset">£{{ bestAsset.profit_loss | number:'1.2-2' }}</p>
+        </article>
+
+        <article>
+          <span>P/L</span>
+          <strong [class.good-text]="portfolioProfitLoss >= 0" [class.bad-text]="portfolioProfitLoss < 0">
+            {{ portfolioProfitLoss >= 0 ? '+' : '' }}£{{ portfolioProfitLoss | number:'1.2-2' }}
+          </strong>
+          <p>Overall result</p>
+        </article>
+      </div>
+
+      <div class="return-card">
+        <div class="budget-label">
+          <p>Portfolio return</p>
+          <span [class.good-text]="portfolioReturnPct >= 0" [class.bad-text]="portfolioReturnPct < 0">
+            {{ portfolioReturnPct >= 0 ? '+' : '' }}{{ portfolioReturnPct | number:'1.2-2' }}%
+          </span>
+        </div>
+
+        <div class="return-meter">
+          <span [style.width.%]="portfolioReturnWidth"></span>
+        </div>
+      </div>
+
+      <div *ngIf="!portfolioAssets.length" class="empty-state">
+        No investment assets available.
+      </div>
+
+      <div *ngIf="portfolioAssets.length > 0" class="asset-list detailed-assets">
+        <div *ngFor="let asset of portfolioAssets; trackBy: trackById" class="asset-row detailed-asset-row">
+          <div>
+            <span class="symbol">{{ asset.symbol }}</span>
+            <strong>{{ asset.name }}</strong>
+          </div>
+
+          <div class="asset-allocation">
+            <div class="rank-track">
+              <div [style.width.%]="assetShare(asset)"></div>
+            </div>
+            <small>{{ assetShare(asset) | number:'1.1-1' }}% of portfolio</small>
+          </div>
+
+          <p [class.good-text]="asset.profit_loss >= 0" [class.bad-text]="asset.profit_loss < 0">
+            {{ asset.profit_loss >= 0 ? '+' : '' }}£{{ asset.profit_loss | number:'1.2-2' }}
+          </p>
+        </div>
+      </div>
+
+    </section>
+
+  </ng-container>
+
+</div>

@@ -1,0 +1,320 @@
+<div class="mft-savings-page">
+
+  <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <ng-container *ngIf="mode === 'list'">
+
+    <section class="mft-savings-hero">
+      <div>
+        <span class="mft-eyebrow">Savings</span>
+        <h1>Savings Goals</h1>
+        <p>Plan targets, track progress and stay focused on your financial goals.</p>
+      </div>
+
+      <button class="mft-hero-btn" type="button" (click)="showAdd()">
+        <i class="bi bi-plus-circle"></i>
+        Add Goal
+      </button>
+    </section>
+
+    <div *ngIf="loading" class="mft-loading">
+      <div class="spinner-border text-primary"></div>
+      <p>Loading savings goals...</p>
+    </div>
+
+    <ng-container *ngIf="!loading">
+
+      <section class="mft-stat-grid">
+        <div class="mft-stat-card blue">
+          <p>Total target</p>
+          <h2>£{{ totalTarget | number:'1.2-2' }}</h2>
+          <span>Across all goals</span>
+        </div>
+
+        <div class="mft-stat-card green">
+          <p>Total saved</p>
+          <h2>£{{ totalSaved | number:'1.2-2' }}</h2>
+          <span>Current savings</span>
+        </div>
+
+        <div class="mft-stat-card purple">
+          <p>Progress</p>
+          <h2>{{ averageProgress | number:'1.0-0' }}%</h2>
+          <span>Average completion</span>
+        </div>
+
+        <div class="mft-stat-card orange">
+          <p>Remaining</p>
+          <h2>£{{ totalRemaining | number:'1.2-2' }}</h2>
+          <span>{{ completedCount }} completed</span>
+        </div>
+      </section>
+
+      <section class="mft-filter-panel">
+        <div class="mft-filter-grid">
+          <div class="mft-filter-field">
+            <label>Status</label>
+            <select class="form-select" [(ngModel)]="selectedStatus" name="selectedStatus">
+              <option value="">All goals</option>
+              <option value="active">Active</option>
+              <option value="complete">Completed</option>
+            </select>
+          </div>
+
+          <div class="mft-filter-field">
+            <label>Priority</label>
+            <select class="form-select" [(ngModel)]="selectedPriority" name="selectedPriority">
+              <option value="">All priorities</option>
+              <option *ngFor="let priority of priorities" [value]="priority">{{ priority }}</option>
+            </select>
+          </div>
+
+          <div class="mft-filter-buttons">
+            <button class="mft-save-btn" type="button" (click)="applyFilters()">Apply</button>
+            <button class="mft-cancel-btn" type="button" (click)="resetFilters()">Reset</button>
+          </div>
+        </div>
+      </section>
+
+      <section *ngIf="goals.length === 0" class="mft-empty">
+        <i class="bi bi-piggy-bank"></i>
+        <h3>No savings goals found</h3>
+        <p>Create your first goal to start tracking savings progress.</p>
+        <button type="button" class="mft-hero-btn" (click)="showAdd()">Add Goal</button>
+      </section>
+
+      <section *ngIf="goals.length > 0" class="mft-savings-grid">
+        <article
+          *ngFor="let goal of pagedGoals"
+          class="mft-saving-card"
+          (click)="showDetail(goal)"
+          tabindex="0"
+        >
+          <div class="mft-saving-top">
+            <div class="mft-saving-icon">
+              <i class="bi" [class]="getGoalIcon(goal.category)"></i>
+            </div>
+
+            <span class="mft-priority-pill">{{ goal.priority || 'medium' }}</span>
+          </div>
+
+          <h3>{{ goalName(goal) }}</h3>
+          <p>{{ goal.category || 'Savings goal' }}</p>
+
+          <div class="mft-value-row">
+            <span>Saved</span>
+            <strong>£{{ currentAmount(goal) | number:'1.2-2' }}</strong>
+          </div>
+
+          <div class="mft-meter">
+            <span [style.width.%]="progress(goal)"></span>
+          </div>
+
+          <div class="mft-progress-row">
+            <span>{{ progress(goal) | number:'1.0-0' }}%</span>
+            <span>Target £{{ targetAmount(goal) | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="mft-card-actions">
+            <button type="button" (click)="showEdit(goal, $event)">
+              <i class="bi bi-pencil"></i>
+              Edit
+            </button>
+
+            <button type="button" class="delete" (click)="deleteGoal(goal, $event)">
+              <i class="bi bi-trash"></i>
+              Delete
+            </button>
+          </div>
+        </article>
+      </section>
+
+      <div *ngIf="goals.length > 0" class="mft-pagination">
+        <button type="button" (click)="prevPage()" [disabled]="currentPage <= 1">Previous</button>
+        <span>Page {{ currentPage }} of {{ totalPages }}</span>
+        <button type="button" (click)="nextPage()" [disabled]="currentPage >= totalPages">Next</button>
+      </div>
+
+    </ng-container>
+
+  </ng-container>
+
+  <ng-container *ngIf="mode === 'add'">
+
+    <section class="mft-savings-hero">
+      <div>
+        <button class="mft-top-back-btn" type="button" (click)="showList()">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+
+        <span class="mft-eyebrow">New Goal</span>
+        <h1>Add Savings Goal</h1>
+        <p>Create a target and track your progress.</p>
+      </div>
+    </section>
+
+    <section class="mft-form-layout">
+      <article class="mft-preview-card">
+        <div class="mft-saving-icon large">
+          <i class="bi" [class]="getGoalIcon(form.category)"></i>
+        </div>
+
+        <p>Preview</p>
+        <h3>{{ form.name || 'Goal name' }}</h3>
+        <span>{{ form.category || 'Category' }}</span>
+        <strong>£{{ form.current_amount | number:'1.2-2' }}</strong>
+      </article>
+
+      <article class="mft-form-card">
+        <h2>Goal details</h2>
+        <p>Fill in the target information below.</p>
+
+        <form (ngSubmit)="createGoal()">
+          <ng-container *ngTemplateOutlet="goalForm; context: { model: form, prefix: 'new' }"></ng-container>
+
+          <div class="mft-form-actions">
+            <button class="mft-save-btn" type="submit" [disabled]="submitting">
+              {{ submitting ? 'Saving...' : 'Save Goal' }}
+            </button>
+
+            <button class="mft-cancel-btn" type="button" (click)="showList()">Cancel</button>
+          </div>
+        </form>
+      </article>
+    </section>
+
+  </ng-container>
+
+  <ng-container *ngIf="mode === 'detail' && selectedGoal">
+
+    <section class="mft-savings-hero">
+      <div>
+        <button class="mft-top-back-btn" type="button" (click)="showList()">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+
+        <span class="mft-eyebrow">Goal Details</span>
+        <h1>{{ goalName(selectedGoal) }}</h1>
+        <p>{{ selectedGoal.category || 'Savings goal' }} · {{ progress(selectedGoal) | number:'1.0-0' }}% complete</p>
+      </div>
+
+      <div class="mft-hero-actions">
+        <button class="mft-edit-btn" type="button" (click)="showEdit(selectedGoal)">
+          <i class="bi bi-pencil"></i>
+          Edit
+        </button>
+
+        <button class="mft-delete-btn" type="button" (click)="deleteGoal(selectedGoal)">
+          <i class="bi bi-trash"></i>
+          Delete
+        </button>
+      </div>
+    </section>
+
+    <section class="mft-detail-grid">
+      <article class="mft-detail-card">
+        <h3>Goal information</h3>
+
+        <div class="mft-info-row"><span>Name</span><strong>{{ goalName(selectedGoal) }}</strong></div>
+        <div class="mft-info-row"><span>Category</span><strong>{{ selectedGoal.category || 'Not provided' }}</strong></div>
+        <div class="mft-info-row"><span>Priority</span><strong>{{ selectedGoal.priority || 'medium' }}</strong></div>
+        <div class="mft-info-row"><span>Target date</span><strong>{{ selectedGoal.target_date || 'Not set' }}</strong></div>
+        <div class="mft-info-row"><span>Notes</span><strong>{{ selectedGoal.notes || 'None' }}</strong></div>
+      </article>
+
+      <article class="mft-detail-card mft-summary-card">
+        <div class="mft-saving-icon large">
+          <i class="bi" [class]="getGoalIcon(selectedGoal.category)"></i>
+        </div>
+
+        <h3>{{ goalName(selectedGoal) }}</h3>
+        <p>Progress towards target</p>
+
+        <div class="mft-info-row"><span>Saved</span><strong>£{{ currentAmount(selectedGoal) | number:'1.2-2' }}</strong></div>
+        <div class="mft-info-row"><span>Target</span><strong>£{{ targetAmount(selectedGoal) | number:'1.2-2' }}</strong></div>
+        <div class="mft-info-row"><span>Remaining</span><strong>£{{ remainingAmount(selectedGoal) | number:'1.2-2' }}</strong></div>
+
+        <div class="mft-meter detail">
+          <span [style.width.%]="progress(selectedGoal)"></span>
+        </div>
+      </article>
+    </section>
+
+  </ng-container>
+
+  <ng-container *ngIf="mode === 'edit' && selectedGoal">
+
+    <section class="mft-savings-hero">
+      <div>
+        <button class="mft-top-back-btn" type="button" (click)="showDetail(selectedGoal)">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+
+        <span class="mft-eyebrow">Edit Goal</span>
+        <h1>{{ goalName(selectedGoal) }}</h1>
+        <p>Update this savings goal below.</p>
+      </div>
+    </section>
+
+    <section class="mft-form-card single">
+      <h2>Edit savings goal</h2>
+      <p>Change goal name, target, saved amount or priority.</p>
+
+      <form (ngSubmit)="updateGoal()">
+        <ng-container *ngTemplateOutlet="goalForm; context: { model: editForm, prefix: 'edit' }"></ng-container>
+
+        <div class="mft-form-actions">
+          <button class="mft-save-btn" type="submit" [disabled]="submitting">
+            {{ submitting ? 'Saving...' : 'Save Changes' }}
+          </button>
+
+          <button class="mft-cancel-btn" type="button" (click)="showDetail(selectedGoal)">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+  </ng-container>
+
+  <ng-template #goalForm let-model="model" let-prefix="prefix">
+    <div class="row g-3">
+      <div class="col-12 col-md-4">
+        <label class="form-label">Goal name</label>
+        <input class="form-control" [(ngModel)]="model.name" [name]="prefix + 'Name'" required />
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Category</label>
+        <input class="form-control" [(ngModel)]="model.category" [name]="prefix + 'Category'" placeholder="Example: holiday" />
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Priority</label>
+        <select class="form-select" [(ngModel)]="model.priority" [name]="prefix + 'Priority'">
+          <option *ngFor="let priority of priorities" [value]="priority">{{ priority }}</option>
+        </select>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Current saved</label>
+        <input type="number" class="form-control" [(ngModel)]="model.current_amount" [name]="prefix + 'CurrentAmount'" required />
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Target amount</label>
+        <input type="number" class="form-control" [(ngModel)]="model.target_amount" [name]="prefix + 'TargetAmount'" required />
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Target date</label>
+        <input type="date" class="form-control" [(ngModel)]="model.target_date" [name]="prefix + 'TargetDate'" />
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Notes</label>
+        <input class="form-control" [(ngModel)]="model.notes" [name]="prefix + 'Notes'" />
+      </div>
+    </div>
+  </ng-template>
+
+</div>

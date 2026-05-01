@@ -1,0 +1,98 @@
+<div class="mft-auth-page">
+
+  <section class="mft-auth-left">
+    <div class="mft-brand">
+      <div class="mft-logo">
+        <i class="bi bi-wallet2"></i>
+      </div>
+      <span>FinanceTracker</span>
+    </div>
+
+    <div class="mft-auth-copy">
+      <span class="mft-eyebrow">Personal Finance Dashboard</span>
+      <h1>Take control of your money in one place.</h1>
+      <p>
+        Track accounts, transactions, budgets, savings goals and investments with a clean,
+        simple dashboard designed for everyday financial management.
+      </p>
+
+      <div class="mft-feature-grid">
+        <div>
+          <i class="bi bi-bank"></i>
+          <strong>Accounts</strong>
+          <span>Monitor balances</span>
+        </div>
+
+        <div>
+          <i class="bi bi-receipt"></i>
+          <strong>Transactions</strong>
+          <span>Track spending</span>
+        </div>
+
+        <div>
+          <i class="bi bi-pie-chart"></i>
+          <strong>Budgets</strong>
+          <span>Plan monthly limits</span>
+        </div>
+
+        <div>
+          <i class="bi bi-graph-up-arrow"></i>
+          <strong>Investments</strong>
+          <span>View returns</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mft-auth-right">
+    <article class="mft-auth-card">
+      <div class="mft-auth-card-header">
+        <h2>Welcome back</h2>
+        <p>Login to continue to your dashboard.</p>
+      </div>
+
+      <div *ngIf="success" class="alert alert-success">
+        {{ success }}
+      </div>
+
+      <div *ngIf="error" class="alert alert-danger">
+        {{ error }}
+      </div>
+
+      <form (ngSubmit)="login()">
+        <div class="mb-3">
+          <label class="form-label">Email address</label>
+          <input
+            type="email"
+            class="form-control"
+            [(ngModel)]="form.email"
+            name="email"
+            placeholder="you@example.com"
+            required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            [(ngModel)]="form.password"
+            name="password"
+            placeholder="Enter password"
+            required>
+        </div>
+
+        <button class="mft-auth-btn" type="submit" [disabled]="loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+          {{ loading ? 'Logging in...' : 'Login' }}
+        </button>
+      </form>
+
+      <p class="mft-auth-switch">
+        New to FinanceTracker?
+        <a routerLink="/register">Create an account</a>
+      </p>
+    </article>
+  </section>
+
+</div>

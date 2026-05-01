@@ -1,0 +1,641 @@
+<div class="page-modern">
+
+  <div *ngIf="success" class="alert alert-success mb-4">
+    {{ success }}
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger mb-4">
+    {{ error }}
+  </div>
+
+  <!-- MAIN ADMIN PAGE -->
+  <ng-container *ngIf="!selectedUser">
+
+    <section class="modern-hero admin-main-hero">
+      <div>
+        <span class="eyebrow">MYFINANCETRACKER ADMIN</span>
+        <h1>User Management 👥</h1>
+        <p>Manage users, open finance details, edit accounts and keep control of the system.</p>
+      </div>
+
+      <div class="hero-status-card">
+        <p>Total users</p>
+        <h2>{{ users.length }}</h2>
+        <span>Registered accounts</span>
+      </div>
+    </section>
+
+    <section class="modern-grid-4">
+      <div class="metric-card blue">
+        <div>
+          <p>Total users</p>
+          <h2>{{ users.length }}</h2>
+          <span>Registered users</span>
+        </div>
+        <i class="bi bi-people"></i>
+      </div>
+
+      <div class="metric-card green">
+        <div>
+          <p>Active users</p>
+          <h2>{{ activeUsersCount }}</h2>
+          <span>Currently active</span>
+        </div>
+        <i class="bi bi-check-circle"></i>
+      </div>
+
+      <div class="metric-card red">
+        <div>
+          <p>Inactive users</p>
+          <h2>{{ inactiveUsersCount }}</h2>
+          <span>Needs attention</span>
+        </div>
+        <i class="bi bi-person-x"></i>
+      </div>
+
+      <div class="metric-card purple">
+        <div>
+          <p>Admins</p>
+          <h2>{{ adminUsersCount }}</h2>
+          <span>Admin accounts</span>
+        </div>
+        <i class="bi bi-shield-lock"></i>
+      </div>
+    </section>
+
+    <section class="modern-table-card">
+      <div class="panel-title">
+        <div>
+          <h3>Users</h3>
+          <p>Search, view, edit or delete users</p>
+        </div>
+
+        <button
+          class="btn btn-primary"
+          type="button"
+          (click)="showCreateForm = !showCreateForm; editingUser = null">
+          <i class="bi bi-person-plus me-1"></i>
+          {{ showCreateForm ? 'Cancel' : 'Create User' }}
+        </button>
+      </div>
+
+      <div class="mb-4">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Search users by name, email, phone or role"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearchChange()"
+          name="searchTerm">
+      </div>
+
+      <div *ngIf="showCreateForm" class="modern-form-card mb-4">
+        <div class="panel-title">
+          <div>
+            <h3>Create New User</h3>
+            <p>Add a new account to the system</p>
+          </div>
+        </div>
+
+        <form (ngSubmit)="onCreateUser()">
+          <div class="row g-3">
+            <div class="col-12 col-md-3">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Full name"
+                [(ngModel)]="createForm.name"
+                name="createName"
+                required>
+            </div>
+
+            <div class="col-12 col-md-3">
+              <input
+                type="email"
+                class="form-control"
+                placeholder="Email"
+                [(ngModel)]="createForm.email"
+                name="createEmail"
+                required>
+            </div>
+
+            <div class="col-12 col-md-3">
+              <input
+                type="password"
+                class="form-control"
+                placeholder="Password"
+                [(ngModel)]="createForm.password"
+                name="createPassword"
+                required>
+            </div>
+
+            <div class="col-12 col-md-2">
+              <select
+                class="form-select"
+                [(ngModel)]="createForm.roles"
+                name="createRole">
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+
+            <div class="col-12 col-md-1">
+              <button
+                type="submit"
+                class="btn btn-primary w-100"
+                [disabled]="submitting">
+                Add
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div *ngIf="loading" class="empty-state-modern">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-3 mb-0">Loading users...</p>
+      </div>
+
+      <div *ngIf="!loading && filteredUsers.length > 0" class="table-responsive">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Roles</th>
+              <th>Status</th>
+              <th>Joined</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let user of pagedUsers" style="cursor:pointer;">
+              <td (click)="viewUser(user)">{{ user.name }}</td>
+              <td (click)="viewUser(user)">{{ user.email }}</td>
+              <td (click)="viewUser(user)">{{ user.phone || '—' }}</td>
+
+              <td (click)="viewUser(user)">
+                <span
+                  *ngFor="let role of user.roles"
+                  class="badge bg-primary bg-opacity-10 text-primary me-1">
+                  {{ role }}
+                </span>
+              </td>
+
+              <td (click)="viewUser(user)">
+                <span
+                  class="badge"
+                  [class.bg-success]="user.is_active"
+                  [class.bg-secondary]="!user.is_active">
+                  {{ user.is_active ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+
+              <td (click)="viewUser(user)">
+                {{ user.created_at | date:'dd MMM yyyy' }}
+              </td>
+
+              <td class="text-center" style="cursor:default;">
+                <div class="d-flex gap-2 justify-content-center">
+                  <button
+                    class="btn btn-sm btn-outline-primary admin-action-btn"
+                    type="button"
+                    (click)="viewUser(user); $event.stopPropagation()">
+                    <i class="bi bi-eye"></i>
+                  </button>
+
+                  <button
+                    class="btn btn-sm btn-outline-warning admin-action-btn"
+                    type="button"
+                    (click)="startEdit(user); $event.stopPropagation()">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+
+                  <button
+                    class="btn btn-sm btn-outline-danger admin-action-btn"
+                    type="button"
+                    (click)="deleteUser(user.id); $event.stopPropagation()">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div
+        *ngIf="!loading && filteredUsers.length > 0"
+        class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
+
+        <button
+          class="btn btn-outline-secondary btn-sm"
+          type="button"
+          (click)="previousPage()"
+          [disabled]="page === 1">
+          Previous
+        </button>
+
+        <span class="text-muted small">
+          Page {{ page }} of {{ totalPages }}
+          — Showing {{ pagedUsers.length }} of {{ filteredUsers.length }} users
+        </span>
+
+        <button
+          class="btn btn-outline-secondary btn-sm"
+          type="button"
+          (click)="nextPage()"
+          [disabled]="page === totalPages">
+          Next
+        </button>
+      </div>
+
+      <div *ngIf="!loading && filteredUsers.length === 0" class="empty-state-modern">
+        <i class="bi bi-search" style="font-size:3rem;"></i>
+        <p class="mt-3 mb-0">No users found</p>
+      </div>
+    </section>
+
+  </ng-container>
+
+  <!-- USER DETAIL PAGE -->
+  <ng-container *ngIf="selectedUser">
+
+    <section class="modern-hero user-detail-hero">
+      <div class="user-detail-left">
+        <button
+          class="hero-back-icon"
+          type="button"
+          (click)="backToUsers()">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+
+        <span class="eyebrow">USER DETAILS</span>
+        <h1>{{ selectedUser.name }}</h1>
+        <p>{{ selectedUser.email }}</p>
+      </div>
+
+      <div class="hero-status-card user-detail-status">
+        <p>Status</p>
+        <h2>{{ selectedUser.is_active ? 'Active' : 'Inactive' }}</h2>
+        <span>User account</span>
+      </div>
+    </section>
+
+    <section *ngIf="detailsLoading" class="empty-state-modern">
+      <div class="spinner-border text-primary"></div>
+      <p class="mt-3 mb-0">Loading user details...</p>
+    </section>
+
+    <ng-container *ngIf="!detailsLoading">
+
+      <section class="modern-table-card mb-4">
+        <div class="panel-title">
+          <div>
+            <h3>User profile</h3>
+            <p>Basic account information</p>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button
+              class="btn btn-outline-warning"
+              type="button"
+              (click)="startEdit(selectedUser)">
+              <i class="bi bi-pencil me-1"></i>
+              Edit
+            </button>
+
+            <button
+              class="btn btn-outline-danger"
+              type="button"
+              (click)="deleteUser(selectedUser.id)">
+              <i class="bi bi-trash me-1"></i>
+              Delete
+            </button>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-12 col-md-3">
+            <p class="text-muted small mb-1">User ID</p>
+            <h6 class="fw-bold mb-0 text-break">{{ selectedUser.id }}</h6>
+          </div>
+
+          <div class="col-12 col-md-3">
+            <p class="text-muted small mb-1">Phone</p>
+            <h6 class="fw-bold mb-0">{{ selectedUser.phone || '—' }}</h6>
+          </div>
+
+          <div class="col-12 col-md-3">
+            <p class="text-muted small mb-1">Status</p>
+            <span
+              class="badge"
+              [class.bg-success]="selectedUser.is_active"
+              [class.bg-secondary]="!selectedUser.is_active">
+              {{ selectedUser.is_active ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+
+          <div class="col-12 col-md-3">
+            <p class="text-muted small mb-1">Joined</p>
+            <h6 class="fw-bold mb-0">{{ selectedUser.created_at | date:'dd MMM yyyy' }}</h6>
+          </div>
+        </div>
+      </section>
+
+      <section *ngIf="editingUser" class="modern-form-card mb-4">
+        <div class="panel-title">
+          <div>
+            <h3>Edit User</h3>
+            <p>Update user profile details</p>
+          </div>
+        </div>
+
+        <form (ngSubmit)="onEdit()">
+          <div class="row g-3">
+            <div class="col-12 col-md-5">
+              <label class="form-label">Name</label>
+              <input
+                class="form-control"
+                type="text"
+                [(ngModel)]="editForm.name"
+                name="editName"
+                required>
+            </div>
+
+            <div class="col-12 col-md-5">
+              <label class="form-label">Phone</label>
+              <input
+                class="form-control"
+                type="text"
+                [(ngModel)]="editForm.phone"
+                name="editPhone">
+            </div>
+
+            <div class="col-12 col-md-2 d-flex align-items-end gap-2">
+              <button
+                class="btn btn-primary flex-fill"
+                type="submit"
+                [disabled]="submitting">
+                {{ submitting ? 'Saving...' : 'Save' }}
+              </button>
+
+              <button
+                class="btn btn-outline-secondary"
+                type="button"
+                (click)="cancelEdit()">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <section class="modern-grid-4">
+        <div class="metric-card blue">
+          <div>
+            <p>Transactions</p>
+            <h2>{{ selectedUser.transactions?.length || 0 }}</h2>
+            <span>User records</span>
+          </div>
+          <i class="bi bi-arrow-left-right"></i>
+        </div>
+
+        <div class="metric-card green">
+          <div>
+            <p>Savings</p>
+            <h2>{{ selectedUser.savings?.length || 0 }}</h2>
+            <span>Saving goals</span>
+          </div>
+          <i class="bi bi-piggy-bank"></i>
+        </div>
+
+        <div class="metric-card red">
+          <div>
+            <p>Accounts</p>
+            <h2>{{ selectedUser.accounts?.length || 0 }}</h2>
+            <span>Linked accounts</span>
+          </div>
+          <i class="bi bi-bank"></i>
+        </div>
+
+        <div class="metric-card purple">
+          <div>
+            <p>Investments</p>
+            <h2>{{ selectedUser.investments?.length || 0 }}</h2>
+            <span>Portfolio items</span>
+          </div>
+          <i class="bi bi-graph-up"></i>
+        </div>
+      </section>
+
+      <section class="modern-table-card">
+        <div class="d-flex gap-2 flex-wrap mb-4">
+          <button
+            class="btn"
+            [class.btn-primary]="detailTab === 'transactions'"
+            [class.btn-outline-primary]="detailTab !== 'transactions'"
+            type="button"
+            (click)="setDetailTab('transactions')">
+            Transactions
+          </button>
+
+          <button
+            class="btn"
+            [class.btn-primary]="detailTab === 'savings'"
+            [class.btn-outline-primary]="detailTab !== 'savings'"
+            type="button"
+            (click)="setDetailTab('savings')">
+            Savings
+          </button>
+
+          <button
+            class="btn"
+            [class.btn-primary]="detailTab === 'accounts'"
+            [class.btn-outline-primary]="detailTab !== 'accounts'"
+            type="button"
+            (click)="setDetailTab('accounts')">
+            Accounts
+          </button>
+
+          <button
+            class="btn"
+            [class.btn-primary]="detailTab === 'investments'"
+            [class.btn-outline-primary]="detailTab !== 'investments'"
+            type="button"
+            (click)="setDetailTab('investments')">
+            Investments
+          </button>
+        </div>
+
+        <div *ngIf="detailTab === 'transactions'">
+          <div class="panel-title">
+            <div>
+              <h3>Transactions</h3>
+              <p>User transaction history</p>
+            </div>
+          </div>
+
+          <p *ngIf="currentDetailItems.length === 0" class="text-muted">
+            No transactions found.
+          </p>
+
+          <div *ngIf="currentDetailItems.length > 0" class="table-responsive">
+            <table class="modern-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Merchant</th>
+                  <th>Category</th>
+                  <th class="text-end">Amount</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr *ngFor="let tx of pagedDetailItems">
+                  <td>{{ tx.date | date:'dd MMM yyyy' }}</td>
+                  <td>{{ tx.merchant || tx.description || '—' }}</td>
+                  <td>{{ tx.category || '—' }}</td>
+                  <td
+                    class="text-end"
+                    [class.good-money]="tx.amount > 0"
+                    [class.bad-money]="tx.amount < 0">
+                    {{ tx.amount > 0 ? '+' : '' }}£{{ tx.amount | number:'1.2-2' }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div *ngIf="detailTab === 'savings'">
+          <div class="panel-title">
+            <div>
+              <h3>Savings</h3>
+              <p>User saving goals</p>
+            </div>
+          </div>
+
+          <p *ngIf="currentDetailItems.length === 0" class="text-muted">
+            No savings found.
+          </p>
+
+          <div *ngIf="currentDetailItems.length > 0" class="table-responsive">
+            <table class="modern-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Target</th>
+                  <th>Saved</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr *ngFor="let saving of pagedDetailItems">
+                  <td>{{ saving.name || saving.title || 'Saving Goal' }}</td>
+                  <td>£{{ saving.target_amount || saving.target || 0 }}</td>
+                  <td>£{{ saving.current_amount || saving.saved || 0 }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div *ngIf="detailTab === 'accounts'">
+          <div class="panel-title">
+            <div>
+              <h3>Accounts</h3>
+              <p>User linked accounts</p>
+            </div>
+          </div>
+
+          <p *ngIf="currentDetailItems.length === 0" class="text-muted">
+            No accounts found.
+          </p>
+
+          <div *ngIf="currentDetailItems.length > 0" class="table-responsive">
+            <table class="modern-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th class="text-end">Balance</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr *ngFor="let account of pagedDetailItems">
+                  <td>{{ account.name || account.account_name || 'Account' }}</td>
+                  <td>{{ account.type || account.account_type || '—' }}</td>
+                  <td class="text-end">£{{ account.balance || 0 }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div *ngIf="detailTab === 'investments'">
+          <div class="panel-title">
+            <div>
+              <h3>Investments</h3>
+              <p>User investment portfolio</p>
+            </div>
+          </div>
+
+          <p *ngIf="currentDetailItems.length === 0" class="text-muted">
+            No investments found.
+          </p>
+
+          <div *ngIf="currentDetailItems.length > 0" class="table-responsive">
+            <table class="modern-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th class="text-end">Value</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr *ngFor="let investment of pagedDetailItems">
+                  <td>{{ investment.name || investment.symbol || 'Investment' }}</td>
+                  <td>{{ investment.type || '—' }}</td>
+                  <td class="text-end">£{{ investment.value || investment.current_value || 0 }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div
+          *ngIf="currentDetailItems.length > 0"
+          class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
+
+          <button
+            class="btn btn-outline-secondary btn-sm"
+            type="button"
+            (click)="previousDetailPage()"
+            [disabled]="detailPage === 1">
+            Previous
+          </button>
+
+          <span class="text-muted small">
+            Page {{ detailPage }} of {{ detailTotalPages }}
+          </span>
+
+          <button
+            class="btn btn-outline-secondary btn-sm"
+            type="button"
+            (click)="nextDetailPage()"
+            [disabled]="detailPage === detailTotalPages">
+            Next
+          </button>
+        </div>
+      </section>
+
+    </ng-container>
+  </ng-container>
+
+</div>

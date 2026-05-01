@@ -1,0 +1,217 @@
+.mft-auth-page {
+  min-height: 100vh !important;
+  display: grid !important;
+  grid-template-columns: 1.08fr 0.92fr !important;
+  background: #f8fafc !important;
+}
+
+/* LEFT SIDE */
+.mft-auth-left {
+  padding: 42px !important;
+  color: #ffffff !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;   /* FIXED */
+  align-items: flex-start !important;
+  background:
+    radial-gradient(circle at top left, rgba(34,197,94,0.28), transparent 34%),
+    linear-gradient(135deg, #020617, #1d4ed8 58%, #06b6d4) !important;
+}
+
+/* BRAND */
+.mft-brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  font-weight: 950 !important;
+  font-size: 1.1rem !important;
+  color: #ffffff !important;
+  margin-bottom: 38px !important;   /* FIXED GAP */
+  line-height: 1 !important;
+}
+
+.mft-brand span {
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+
+.mft-logo {
+  width: 46px !important;
+  height: 46px !important;
+  border-radius: 16px !important;
+  display: grid !important;
+  place-items: center !important;
+  background: rgba(255,255,255,0.15) !important;
+  border: 1px solid rgba(255,255,255,0.18) !important;
+}
+
+.mft-logo i {
+  color: white !important;
+  font-size: 1.25rem !important;
+}
+
+/* HERO TEXT */
+.mft-auth-copy {
+  max-width: 720px !important;
+  margin: 0 !important;
+}
+
+.mft-eyebrow {
+  display: inline-block !important;
+  font-size: 0.76rem !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  color: rgba(255,255,255,0.74) !important;
+  margin-bottom: 14px !important;
+}
+
+.mft-auth-copy h1 {
+  font-size: clamp(2.4rem, 5vw, 4.8rem) !important;
+  line-height: 1.03 !important;
+  font-weight: 950 !important;
+  margin: 0 0 18px !important;
+  color: #ffffff !important;
+}
+
+.mft-auth-copy p {
+  max-width: 620px !important;
+  margin: 0 !important;
+  color: rgba(255,255,255,0.78) !important;
+  font-size: 1rem !important;
+  line-height: 1.55 !important;
+}
+
+/* FEATURE BOXES */
+.mft-feature-grid {
+  margin-top: 32px !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+}
+
+.mft-feature-grid div {
+  padding: 18px !important;
+  border-radius: 22px !important;
+  background: rgba(255,255,255,0.12) !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.mft-feature-grid i {
+  font-size: 1.4rem !important;
+  display: block !important;
+  margin-bottom: 12px !important;
+  color: white !important;
+}
+
+.mft-feature-grid strong {
+  display: block !important;
+  font-weight: 900 !important;
+  color: white !important;
+  margin-bottom: 4px !important;
+}
+
+.mft-feature-grid span {
+  color: rgba(255,255,255,0.72) !important;
+  font-size: 0.86rem !important;
+}
+
+/* RIGHT SIDE */
+.mft-auth-right {
+  display: grid !important;
+  place-items: center !important;
+  padding: 34px !important;
+}
+
+/* FORM CARD */
+.mft-auth-card {
+  width: 100% !important;
+  max-width: 460px !important;
+  background: #ffffff !important;
+  border-radius: 30px !important;
+  padding: 34px !important;
+  box-shadow: 0 24px 70px rgba(15,23,42,0.12) !important;
+}
+
+.mft-auth-card-header h2 {
+  margin: 0 !important;
+  font-size: 2rem !important;
+  font-weight: 950 !important;
+  color: #0f172a !important;
+}
+
+.mft-auth-card-header p {
+  margin: 8px 0 24px !important;
+  color: #64748b !important;
+}
+
+/* FORM */
+.form-label {
+  font-weight: 850 !important;
+  color: #334155 !important;
+  font-size: 0.86rem !important;
+}
+
+.form-control {
+  border-radius: 15px !important;
+  padding: 0.82rem 0.9rem !important;
+  border: 1px solid #dbe3ef !important;
+}
+
+.form-control:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 0.2rem rgba(37,99,235,0.12) !important;
+}
+
+/* BUTTON */
+.mft-auth-btn {
+  width: 100% !important;
+  border: 0 !important;
+  border-radius: 16px !important;
+  padding: 13px 16px !important;
+  margin-top: 8px !important;
+  color: white !important;
+  font-weight: 900 !important;
+  background: linear-gradient(135deg, #2563eb, #06b6d4) !important;
+  display: inline-flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.mft-auth-btn:disabled {
+  opacity: 0.7 !important;
+}
+
+/* SWITCH LINK */
+.mft-auth-switch {
+  text-align: center !important;
+  margin: 22px 0 0 !important;
+  color: #64748b !important;
+}
+
+.mft-auth-switch a {
+  color: #2563eb !important;
+  font-weight: 900 !important;
+  text-decoration: none !important;
+}
+
+/* MOBILE */
+@media (max-width: 900px) {
+  .mft-auth-page {
+    grid-template-columns: 1fr !important;
+  }
+
+  .mft-auth-left {
+    padding: 30px !important;
+  }
+
+  .mft-brand {
+    margin-bottom: 28px !important;
+  }
+
+  .mft-feature-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

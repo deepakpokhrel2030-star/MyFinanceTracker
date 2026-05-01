@@ -1,0 +1,139 @@
+<div class="mft-profile-page">
+
+  <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <section class="mft-profile-hero">
+    <div>
+      <span class="mft-eyebrow">Profile</span>
+      <h1>My Profile</h1>
+      <p>Manage your personal details, contact information, address and password.</p>
+    </div>
+
+    <button class="mft-logout-btn" type="button" (click)="logout()">
+      <i class="bi bi-box-arrow-right"></i>
+      Logout
+    </button>
+  </section>
+
+  <section class="mft-profile-layout">
+
+    <article class="mft-profile-card" *ngIf="user">
+      <div class="mft-avatar">{{ initials }}</div>
+
+      <h2>{{ user.name }}</h2>
+      <p>{{ user.email }}</p>
+
+      <span class="mft-role-pill">{{ roleText }}</span>
+
+      <div class="mft-profile-actions">
+        <button class="mft-edit-btn" type="button" (click)="startEdit()">
+          <i class="bi bi-pencil"></i>
+          Edit Profile
+        </button>
+
+        <button class="mft-password-btn" type="button" (click)="openPasswordChange()">
+          <i class="bi bi-lock"></i>
+          Change Password
+        </button>
+      </div>
+    </article>
+
+    <article class="mft-details-card">
+
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+      </div>
+
+      <ng-container *ngIf="!loading && user">
+
+        <div class="mft-card-header">
+          <div>
+            <h3>Account Details</h3>
+            <p>Your saved profile information.</p>
+          </div>
+        </div>
+
+        <ng-container *ngIf="!editMode && !passwordMode">
+          <div class="mft-info-row"><span>Full name</span><strong>{{ user.name }}</strong></div>
+          <div class="mft-info-row"><span>Email address</span><strong>{{ user.email }}</strong></div>
+          <div class="mft-info-row"><span>Phone number</span><strong>{{ user.phone || 'Not provided' }}</strong></div>
+          <div class="mft-info-row"><span>Address</span><strong>{{ user.address?.street || 'Not provided' }}</strong></div>
+          <div class="mft-info-row"><span>City</span><strong>{{ user.address?.city || 'Not provided' }}</strong></div>
+          <div class="mft-info-row"><span>Postcode</span><strong>{{ user.address?.postcode || 'Not provided' }}</strong></div>
+          <div class="mft-info-row"><span>Country</span><strong>{{ user.address?.country || 'Not provided' }}</strong></div>
+          <div class="mft-info-row"><span>Role</span><strong>{{ roleText }}</strong></div>
+        </ng-container>
+
+        <form *ngIf="editMode" (ngSubmit)="onUpdate()">
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label class="form-label">Full name</label>
+              <input class="form-control" [(ngModel)]="form.name" name="name" required />
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label class="form-label">Phone number</label>
+              <input class="form-control" [(ngModel)]="form.phone" name="phone" />
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Street address</label>
+              <input class="form-control" [(ngModel)]="form.address.street" name="street" />
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">City</label>
+              <input class="form-control" [(ngModel)]="form.address.city" name="city" />
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Postcode</label>
+              <input class="form-control" [(ngModel)]="form.address.postcode" name="postcode" />
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Country</label>
+              <input class="form-control" [(ngModel)]="form.address.country" name="country" />
+            </div>
+          </div>
+
+          <div class="mft-form-actions">
+            <button class="mft-save-btn" type="submit" [disabled]="submitting">
+              Save Changes
+            </button>
+            <button class="mft-cancel-btn" type="button" (click)="cancelEdit()">
+              Cancel
+            </button>
+          </div>
+        </form>
+
+        <form *ngIf="passwordMode" (ngSubmit)="onChangePassword()">
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label class="form-label">New password</label>
+              <input type="password" class="form-control" [(ngModel)]="passwordForm.password" name="password" />
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label class="form-label">Confirm password</label>
+              <input type="password" class="form-control" [(ngModel)]="passwordForm.confirmPassword" name="confirmPassword" />
+            </div>
+          </div>
+
+          <div class="mft-form-actions">
+            <button class="mft-save-btn" type="submit" [disabled]="submitting">
+              Update Password
+            </button>
+            <button class="mft-cancel-btn" type="button" (click)="cancelPasswordChange()">
+              Cancel
+            </button>
+          </div>
+        </form>
+
+      </ng-container>
+    </article>
+
+  </section>
+
+</div>

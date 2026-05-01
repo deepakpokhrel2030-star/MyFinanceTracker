@@ -1,0 +1,340 @@
+<div class="mft-transactions-page">
+
+  <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <ng-container *ngIf="mode === 'list'">
+
+    <section class="mft-transactions-hero">
+      <div>
+        <span class="mft-eyebrow">Transactions</span>
+        <h1>Transactions</h1>
+        <p>Search, filter, review and manage all income and expenses in one clean workspace.</p>
+      </div>
+
+      <button class="mft-hero-btn" type="button" (click)="showAdd()">
+        <i class="bi bi-plus-circle"></i>
+        Add Transaction
+      </button>
+    </section>
+
+    <div *ngIf="loading" class="mft-loading">
+      <div class="spinner-border text-primary"></div>
+      <p>Loading transactions...</p>
+    </div>
+
+    <ng-container *ngIf="!loading">
+
+      <section class="mft-stat-grid">
+        <div class="mft-stat-card green">
+          <p>Income</p>
+          <h2>£{{ incomeTotal | number:'1.2-2' }}</h2>
+          <span>Filtered income</span>
+        </div>
+
+        <div class="mft-stat-card red">
+          <p>Expenses</p>
+          <h2>£{{ expenseTotal | number:'1.2-2' }}</h2>
+          <span>Filtered expenses</span>
+        </div>
+
+        <div class="mft-stat-card blue">
+          <p>Net</p>
+          <h2>£{{ netTotal | number:'1.2-2' }}</h2>
+          <span>Income minus expenses</span>
+        </div>
+
+        <div class="mft-stat-card purple">
+          <p>Records</p>
+          <h2>{{ totalItems }}</h2>
+          <span>Total transactions</span>
+        </div>
+      </section>
+
+      <section class="mft-filter-panel">
+        <div class="mft-filter-grid">
+          <div class="mft-filter-field search">
+            <label>Search</label>
+            <input
+              class="form-control"
+              placeholder="Merchant or description"
+              [(ngModel)]="filters.search"
+              name="search"
+            />
+          </div>
+
+          <div class="mft-filter-field">
+            <label>Account</label>
+            <select class="form-select" [(ngModel)]="filters.account_id" name="filterAccount">
+              <option value="">All accounts</option>
+              <option *ngFor="let acc of accounts; trackBy: trackById" [value]="acc.id">{{ acc.name }}</option>
+            </select>
+          </div>
+
+          <div class="mft-filter-field">
+            <label>Type</label>
+            <select class="form-select" [(ngModel)]="filters.type" name="filterType">
+              <option value="">All types</option>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+          </div>
+
+          <div class="mft-filter-field">
+            <label>Category</label>
+            <select class="form-select" [(ngModel)]="filters.category" name="filterCategory">
+              <option value="">All categories</option>
+              <option *ngFor="let cat of categories; trackBy: trackByValue" [value]="cat">{{ cat }}</option>
+            </select>
+          </div>
+
+          <div class="mft-filter-field">
+            <label>From date</label>
+            <input type="date" class="form-control" [(ngModel)]="filters.start" name="start" />
+          </div>
+
+          <div class="mft-filter-buttons">
+            <button class="mft-save-btn" type="button" (click)="applyFilters()">Apply</button>
+            <button class="mft-cancel-btn" type="button" (click)="resetFilters()">Reset</button>
+          </div>
+        </div>
+      </section>
+
+      <section *ngIf="transactions.length === 0" class="mft-empty">
+        <i class="bi bi-receipt"></i>
+        <h3>No transactions found</h3>
+        <p>Add a transaction or change your filters.</p>
+        <button type="button" class="mft-hero-btn" (click)="showAdd()">Add Transaction</button>
+      </section>
+
+      <section *ngIf="transactions.length > 0" class="mft-transaction-card-grid">
+        <article
+          *ngFor="let tx of pagedTransactions; trackBy: trackById"
+          class="mft-transaction-card"
+          (click)="showDetail(tx)"
+        >
+          <div class="mft-transaction-card-top">
+            <div class="mft-tx-icon" [class.income-bg]="tx.amount > 0">
+              <i class="bi" [class]="getTransactionIcon(tx)"></i>
+            </div>
+
+            <span class="mft-category-pill">{{ tx.category || 'other' }}</span>
+          </div>
+
+          <h3>{{ tx.merchant || tx.description || 'Transaction' }}</h3>
+          <p>{{ getAccountName(tx.account_id) }}</p>
+
+          <div class="mft-value-row">
+            <span>{{ tx.date | date:'dd MMM yyyy' }}</span>
+            <strong [class.income]="tx.amount > 0" [class.expense]="tx.amount < 0">
+              {{ tx.amount > 0 ? '+' : '-' }}£{{ abs(tx.amount) | number:'1.2-2' }}
+            </strong>
+          </div>
+
+          <div class="mft-card-actions">
+            <button type="button" (click)="showEdit(tx, $event)">
+              <i class="bi bi-pencil"></i>
+              Edit
+            </button>
+
+            <button type="button" class="delete" (click)="deleteTransaction(tx, $event)">
+              <i class="bi bi-trash"></i>
+              Delete
+            </button>
+          </div>
+        </article>
+      </section>
+
+      <div *ngIf="transactions.length > 0" class="mft-pagination">
+        <button type="button" (click)="prevPage()" [disabled]="currentPage <= 1">Previous</button>
+        <span>Page {{ currentPage }} of {{ totalPages }}</span>
+        <button type="button" (click)="nextPage()" [disabled]="currentPage >= totalPages">Next</button>
+      </div>
+
+    </ng-container>
+
+  </ng-container>
+
+  <ng-container *ngIf="mode === 'add'">
+    <section class="mft-transactions-hero">
+      <div>
+        <button class="mft-top-back-btn" type="button" (click)="showList()">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+
+        <span class="mft-eyebrow">New Transaction</span>
+        <h1>Add Transaction</h1>
+        <p>Create a new income or expense record.</p>
+      </div>
+    </section>
+
+    <section class="mft-form-card">
+      <h2>Transaction details</h2>
+      <p>Complete the form below.</p>
+
+      <form (ngSubmit)="createTransaction()">
+        <ng-container *ngTemplateOutlet="transactionForm; context: { model: form, prefix: 'new' }"></ng-container>
+
+        <div class="mft-form-actions">
+          <button class="mft-save-btn" type="submit" [disabled]="submitting">
+            {{ submitting ? 'Saving...' : 'Save Transaction' }}
+          </button>
+
+          <button class="mft-cancel-btn" type="button" (click)="showList()">Cancel</button>
+        </div>
+      </form>
+    </section>
+  </ng-container>
+
+  <ng-container *ngIf="mode === 'detail' && selectedTransaction">
+    <section class="mft-transactions-hero">
+      <div>
+        <button class="mft-top-back-btn" type="button" (click)="showList()">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+
+        <span class="mft-eyebrow">Transaction Details</span>
+        <h1>{{ selectedTransaction.merchant || selectedTransaction.description || 'Transaction' }}</h1>
+        <p>{{ getAccountName(selectedTransaction.account_id) }} · {{ selectedTransaction.date | date:'dd MMM yyyy' }}</p>
+      </div>
+
+      <div class="mft-hero-actions">
+        <button class="mft-edit-btn" type="button" (click)="showEdit(selectedTransaction)">
+          <i class="bi bi-pencil"></i>
+          Edit
+        </button>
+
+        <button class="mft-delete-btn" type="button" (click)="deleteTransaction(selectedTransaction)">
+          <i class="bi bi-trash"></i>
+          Delete
+        </button>
+      </div>
+    </section>
+
+    <section class="mft-detail-grid">
+      <article class="mft-detail-card">
+        <h3>Transaction information</h3>
+
+        <div class="mft-info-row">
+          <span>Type</span>
+          <strong>{{ getTransactionType(selectedTransaction) }}</strong>
+        </div>
+
+        <div class="mft-info-row">
+          <span>Amount</span>
+          <strong [class.income]="selectedTransaction.amount > 0" [class.expense]="selectedTransaction.amount < 0">
+            {{ selectedTransaction.amount > 0 ? '+' : '-' }}£{{ abs(selectedTransaction.amount) | number:'1.2-2' }}
+          </strong>
+        </div>
+
+        <div class="mft-info-row">
+          <span>Account</span>
+          <strong>{{ getAccountName(selectedTransaction.account_id) }}</strong>
+        </div>
+
+        <div class="mft-info-row">
+          <span>Category</span>
+          <strong>{{ selectedTransaction.category || 'other' }}</strong>
+        </div>
+
+        <div class="mft-info-row">
+          <span>Date</span>
+          <strong>{{ selectedTransaction.date | date:'dd MMM yyyy' }}</strong>
+        </div>
+      </article>
+
+      <article class="mft-detail-card mft-summary-card">
+        <div class="mft-tx-icon big" [class.income-bg]="selectedTransaction.amount > 0">
+          <i class="bi" [class]="getTransactionIcon(selectedTransaction)"></i>
+        </div>
+
+        <h3>{{ selectedTransaction.merchant || 'Transaction' }}</h3>
+        <p>{{ selectedTransaction.description || 'No description provided' }}</p>
+
+        <strong [class.income]="selectedTransaction.amount > 0" [class.expense]="selectedTransaction.amount < 0">
+          {{ selectedTransaction.amount > 0 ? '+' : '-' }}£{{ abs(selectedTransaction.amount) | number:'1.2-2' }}
+        </strong>
+      </article>
+    </section>
+  </ng-container>
+
+  <ng-container *ngIf="mode === 'edit' && selectedTransaction">
+    <section class="mft-transactions-hero">
+      <div>
+        <button class="mft-top-back-btn" type="button" (click)="showDetail(selectedTransaction)">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+
+        <span class="mft-eyebrow">Edit Transaction</span>
+        <h1>{{ selectedTransaction.merchant || selectedTransaction.description || 'Transaction' }}</h1>
+        <p>Update this transaction below.</p>
+      </div>
+    </section>
+
+    <section class="mft-form-card">
+      <h2>Edit transaction</h2>
+      <p>Change the transaction details below.</p>
+
+      <form (ngSubmit)="updateTransaction()">
+        <ng-container *ngTemplateOutlet="transactionForm; context: { model: editForm, prefix: 'edit' }"></ng-container>
+
+        <div class="mft-form-actions">
+          <button class="mft-save-btn" type="submit" [disabled]="submitting">
+            {{ submitting ? 'Saving...' : 'Save Changes' }}
+          </button>
+
+          <button class="mft-cancel-btn" type="button" (click)="showDetail(selectedTransaction)">Cancel</button>
+        </div>
+      </form>
+    </section>
+  </ng-container>
+
+  <ng-template #transactionForm let-model="model" let-prefix="prefix">
+    <div class="row g-3">
+      <div class="col-12 col-md-6">
+        <label class="form-label">Account</label>
+        <select class="form-select" [(ngModel)]="model.account_id" [name]="prefix + 'Account'" required>
+          <option value="">Select account</option>
+          <option *ngFor="let acc of accounts" [value]="acc.id">{{ acc.name }}</option>
+        </select>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label">Type</label>
+        <select class="form-select" [(ngModel)]="model.type" [name]="prefix + 'Type'">
+          <option value="expense">Expense</option>
+          <option value="income">Income</option>
+        </select>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Amount</label>
+        <input type="number" class="form-control" [(ngModel)]="model.amount" [name]="prefix + 'Amount'" required />
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Category</label>
+        <select class="form-select" [(ngModel)]="model.category" [name]="prefix + 'Category'">
+          <option value="">Select category</option>
+          <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+        </select>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Date</label>
+        <input type="date" class="form-control" [(ngModel)]="model.date" [name]="prefix + 'Date'" required />
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label">Merchant</label>
+        <input class="form-control" [(ngModel)]="model.merchant" [name]="prefix + 'Merchant'" />
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label">Description</label>
+        <input class="form-control" [(ngModel)]="model.description" [name]="prefix + 'Description'" />
+      </div>
+    </div>
+  </ng-template>
+
+</div>

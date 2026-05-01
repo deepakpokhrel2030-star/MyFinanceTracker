@@ -1,0 +1,162 @@
+:host {
+  display: block;
+}
+
+/* MAIN ADMIN HERO */
+.admin-main-hero {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 32px !important;
+}
+
+.admin-main-hero > div:first-child {
+  flex: 1;
+}
+
+/* USER DETAIL HERO */
+.user-detail-hero {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  gap: 32px !important;
+  padding: 38px 42px !important;
+  min-height: 280px !important;
+}
+
+.user-detail-left {
+  flex: 1;
+  padding-top: 0 !important;
+}
+
+.hero-back-icon {
+  width: 54px !important;
+  height: 54px !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  background: rgba(255, 255, 255, 0.13) !important;
+  color: #ffffff !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-bottom: 18px !important;
+  font-size: 1.2rem !important;
+  box-shadow: none !important;
+}
+
+.hero-back-icon i {
+  color: #ffffff !important;
+}
+
+.hero-back-icon:hover {
+  background: rgba(255, 255, 255, 0.24) !important;
+}
+
+/* HERO TEXT */
+.modern-hero h1,
+.modern-hero h2 {
+  color: #ffffff !important;
+}
+
+.modern-hero p {
+  color: rgba(255, 255, 255, 0.76) !important;
+}
+
+.modern-hero .eyebrow {
+  display: block !important;
+  margin-bottom: 10px !important;
+  color: rgba(255, 255, 255, 0.78) !important;
+}
+
+.user-detail-hero .eyebrow {
+  margin-bottom: 18px !important;
+  color: #ffffff !important;
+}
+
+.user-detail-hero h1 {
+  margin: 0 0 12px !important;
+  font-size: 64px !important;
+  line-height: 1 !important;
+  font-weight: 950 !important;
+  color: #ffffff !important;
+}
+
+.user-detail-hero p {
+  margin: 0 !important;
+  color: rgba(255, 255, 255, 0.78) !important;
+}
+
+/* HERO STATUS CARD */
+.hero-status-card {
+  min-width: 220px !important;
+  padding: 22px !important;
+  border-radius: 24px !important;
+  background: rgba(255, 255, 255, 0.13) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: white !important;
+}
+
+.hero-status-card p {
+  margin: 0 0 8px !important;
+  color: rgba(255, 255, 255, 0.75) !important;
+  font-size: 0.85rem !important;
+}
+
+.hero-status-card h2 {
+  margin: 0 0 4px !important;
+  font-size: 2rem !important;
+  font-weight: 950 !important;
+  color: white !important;
+}
+
+.hero-status-card span {
+  color: rgba(255, 255, 255, 0.75) !important;
+  font-size: 0.85rem !important;
+}
+
+.user-detail-status {
+  margin-top: 26px !important;
+}
+
+/* METRIC CARDS */
+.metric-card h2,
+.metric-card h3,
+.metric-card i {
+  color: #ffffff !important;
+}
+
+.metric-card p,
+.metric-card span {
+  color: rgba(255, 255, 255, 0.76) !important;
+}
+
+/* TABLE ACTION BUTTONS */
+.admin-action-btn {
+  width: 34px !important;
+  height: 34px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .admin-main-hero,
+  .user-detail-hero {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .hero-status-card {
+    width: 100% !important;
+  }
+
+  .user-detail-hero h1 {
+    font-size: 44px !important;
+  }
+
+  .user-detail-status {
+    margin-top: 0 !important;
+  }
+}

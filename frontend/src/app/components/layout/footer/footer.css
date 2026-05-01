@@ -1,0 +1,71 @@
+.mft-footer {
+  margin-top: 30px !important;
+  padding: 20px 28px !important;
+  background: #0f172a !important;
+  color: white !important;
+  border-radius: 22px 22px 0 0 !important;
+}
+
+.mft-footer-inner {
+  max-width: 1280px !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 20px !important;
+}
+
+.mft-footer-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+.mft-footer-logo {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 14px !important;
+  display: grid !important;
+  place-items: center !important;
+  background: #1d4ed8 !important;
+  font-size: 1.3rem !important;
+}
+
+.mft-footer h3 {
+  margin: 0 !important;
+  font-size: 1rem !important;
+  font-weight: 900 !important;
+  color: white !important;
+}
+
+.mft-footer p {
+  margin: 3px 0 0 !important;
+  font-size: 0.82rem !important;
+  color: rgba(255,255,255,0.68) !important;
+}
+
+.mft-footer-right {
+  display: grid !important;
+  gap: 3px !important;
+  text-align: right !important;
+}
+
+.mft-footer-right span {
+  font-weight: 800 !important;
+  font-size: 0.85rem !important;
+}
+
+.mft-footer-right small {
+  color: rgba(255,255,255,0.64) !important;
+}
+
+@media (max-width: 768px) {
+  .mft-footer-inner {
+    flex-direction: column !important;
+    text-align: center !important;
+  }
+
+  .mft-footer-right {
+    text-align: center !important;
+  }
+}

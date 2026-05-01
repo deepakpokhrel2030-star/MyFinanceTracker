@@ -1,0 +1,342 @@
+<div class="mft-investments-page">
+
+  <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <ng-container *ngIf="mode === 'list'">
+
+    <section class="mft-investments-hero">
+      <div>
+        <span class="mft-eyebrow">Investments</span>
+        <h1>Investments</h1>
+        <p>Track holdings, brokers, sectors, current value and portfolio returns.</p>
+      </div>
+
+      <button class="mft-hero-btn" type="button" (click)="showAdd()">
+        <i class="bi bi-plus-circle"></i>
+        Add Investment
+      </button>
+    </section>
+
+    <div *ngIf="loading" class="mft-loading">
+      <div class="spinner-border text-primary"></div>
+      <p>Loading investments...</p>
+    </div>
+
+    <ng-container *ngIf="!loading">
+
+      <section class="mft-stat-grid">
+        <div class="mft-stat-card blue">
+          <p>Invested</p>
+          <h2>£{{ totalInvested | number:'1.2-2' }}</h2>
+          <span>Total cost</span>
+        </div>
+
+        <div class="mft-stat-card green">
+          <p>Current value</p>
+          <h2>£{{ totalCurrentValue | number:'1.2-2' }}</h2>
+          <span>Portfolio value</span>
+        </div>
+
+        <div class="mft-stat-card red">
+          <p>Profit / Loss</p>
+          <h2>£{{ totalProfitLoss | number:'1.2-2' }}</h2>
+          <span>{{ totalReturnPct | number:'1.2-2' }}% return</span>
+        </div>
+
+        <div class="mft-stat-card purple">
+          <p>Holdings</p>
+          <h2>{{ investments.length }}</h2>
+          <span>{{ winnersCount }} up · {{ losersCount }} down</span>
+        </div>
+      </section>
+
+      <section class="mft-filter-panel">
+        <div class="mft-filter-grid">
+          <div class="mft-filter-field">
+            <label>Type</label>
+            <select class="form-select" [(ngModel)]="selectedType" name="selectedType">
+              <option value="">All types</option>
+              <option *ngFor="let type of types" [value]="type">{{ type }}</option>
+            </select>
+          </div>
+
+          <div class="mft-filter-field">
+            <label>Sector</label>
+            <select class="form-select" [(ngModel)]="selectedSector" name="selectedSector">
+              <option value="">All sectors</option>
+              <option *ngFor="let sector of availableSectors" [value]="sector">{{ sector }}</option>
+            </select>
+          </div>
+
+          <div class="mft-filter-buttons">
+            <button class="mft-save-btn" type="button" (click)="applyFilters()">Apply</button>
+            <button class="mft-cancel-btn" type="button" (click)="resetFilters()">Reset</button>
+          </div>
+        </div>
+      </section>
+
+      <section *ngIf="investments.length === 0" class="mft-empty">
+        <i class="bi bi-graph-up-arrow"></i>
+        <h3>No investments found</h3>
+        <p>Add your first holding or reset the filters.</p>
+        <button type="button" class="mft-hero-btn" (click)="showAdd()">Add Investment</button>
+      </section>
+
+      <section *ngIf="investments.length > 0" class="mft-investment-grid">
+        <article
+          *ngFor="let investment of pagedInvestments"
+          class="mft-investment-card"
+          (click)="showDetail(investment)"
+          tabindex="0"
+        >
+          <div class="mft-investment-top">
+            <div class="mft-investment-icon">
+              <i class="bi" [class]="getInvestmentIcon(investment.type)"></i>
+            </div>
+
+            <span class="mft-type-pill">{{ investment.type }}</span>
+          </div>
+
+          <h3>{{ investment.symbol }}</h3>
+          <p>{{ investment.name }}</p>
+
+          <div class="mft-value-row">
+            <span>Current value</span>
+            <strong>£{{ currentValue(investment) | number:'1.2-2' }}</strong>
+          </div>
+
+          <div class="mft-meter">
+            <span [style.width.%]="investmentWidth(investment)"></span>
+          </div>
+
+          <div class="mft-return-row">
+            <span [class.positive]="profitLoss(investment) >= 0" [class.negative]="profitLoss(investment) < 0">
+              {{ profitLoss(investment) >= 0 ? '+' : '' }}£{{ profitLoss(investment) | number:'1.2-2' }}
+            </span>
+
+            <span [class.positive]="returnPct(investment) >= 0" [class.negative]="returnPct(investment) < 0">
+              {{ returnPct(investment) | number:'1.2-2' }}%
+            </span>
+          </div>
+
+          <div class="mft-card-actions">
+            <button type="button" (click)="showEdit(investment, $event)">
+              <i class="bi bi-pencil"></i>
+              Edit
+            </button>
+
+            <button type="button" class="delete" (click)="deleteInvestment(investment, $event)">
+              <i class="bi bi-trash"></i>
+              Delete
+            </button>
+          </div>
+        </article>
+      </section>
+
+      <div *ngIf="investments.length > 0" class="mft-pagination">
+        <button type="button" (click)="prevPage()" [disabled]="currentPage <= 1">Previous</button>
+        <span>Page {{ currentPage }} of {{ totalPages }}</span>
+        <button type="button" (click)="nextPage()" [disabled]="currentPage >= totalPages">Next</button>
+      </div>
+
+    </ng-container>
+
+  </ng-container>
+
+  <ng-container *ngIf="mode === 'add'">
+
+    <section class="mft-investments-hero">
+      <div>
+        <button class="mft-top-back-btn" type="button" (click)="showList()">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+
+        <span class="mft-eyebrow">New Investment</span>
+        <h1>Add Investment</h1>
+        <p>Create a new portfolio holding.</p>
+      </div>
+    </section>
+
+    <section class="mft-form-layout">
+      <article class="mft-preview-card">
+        <div class="mft-investment-icon large">
+          <i class="bi" [class]="getInvestmentIcon(form.type)"></i>
+        </div>
+
+        <p>Preview</p>
+        <h3>{{ form.symbol || 'Symbol' }}</h3>
+        <span>{{ form.name || 'Investment name' }}</span>
+        <strong>{{ form.currency }} {{ (form.quantity * form.current_price) | number:'1.2-2' }}</strong>
+      </article>
+
+      <article class="mft-form-card">
+        <h2>Investment details</h2>
+        <p>Fill in the holding information below.</p>
+
+        <form (ngSubmit)="createInvestment()">
+          <ng-container *ngTemplateOutlet="investmentForm; context: { model: form, prefix: 'new' }"></ng-container>
+
+          <div class="mft-form-actions">
+            <button class="mft-save-btn" type="submit" [disabled]="submitting">
+              {{ submitting ? 'Saving...' : 'Save Investment' }}
+            </button>
+
+            <button class="mft-cancel-btn" type="button" (click)="showList()">Cancel</button>
+          </div>
+        </form>
+      </article>
+    </section>
+
+  </ng-container>
+
+  <ng-container *ngIf="mode === 'detail' && selectedInvestment">
+
+    <section class="mft-investments-hero">
+      <div>
+        <button class="mft-top-back-btn" type="button" (click)="showList()">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+
+        <span class="mft-eyebrow">Investment Details</span>
+        <h1>{{ selectedInvestment.symbol }}</h1>
+        <p>{{ selectedInvestment.name }} · {{ selectedInvestment.type }}</p>
+      </div>
+
+      <div class="mft-hero-actions">
+        <button class="mft-edit-btn" type="button" (click)="showEdit(selectedInvestment)">
+          <i class="bi bi-pencil"></i>
+          Edit
+        </button>
+
+        <button class="mft-delete-btn" type="button" (click)="deleteInvestment(selectedInvestment)">
+          <i class="bi bi-trash"></i>
+          Delete
+        </button>
+      </div>
+    </section>
+
+    <section class="mft-detail-grid">
+      <article class="mft-detail-card">
+        <h3>Investment information</h3>
+
+        <div class="mft-info-row"><span>Symbol</span><strong>{{ selectedInvestment.symbol }}</strong></div>
+        <div class="mft-info-row"><span>Name</span><strong>{{ selectedInvestment.name }}</strong></div>
+        <div class="mft-info-row"><span>Type</span><strong>{{ selectedInvestment.type }}</strong></div>
+        <div class="mft-info-row"><span>Quantity</span><strong>{{ selectedInvestment.quantity }}</strong></div>
+        <div class="mft-info-row"><span>Broker</span><strong>{{ selectedInvestment.broker || 'Not provided' }}</strong></div>
+        <div class="mft-info-row"><span>Sector</span><strong>{{ selectedInvestment.sector || 'Not provided' }}</strong></div>
+      </article>
+
+      <article class="mft-detail-card mft-summary-card">
+        <div class="mft-investment-icon large">
+          <i class="bi" [class]="getInvestmentIcon(selectedInvestment.type)"></i>
+        </div>
+
+        <h3>{{ selectedInvestment.symbol }}</h3>
+        <p>{{ selectedInvestment.name }}</p>
+
+        <div class="mft-info-row"><span>Invested</span><strong>£{{ investedValue(selectedInvestment) | number:'1.2-2' }}</strong></div>
+        <div class="mft-info-row"><span>Current</span><strong>£{{ currentValue(selectedInvestment) | number:'1.2-2' }}</strong></div>
+
+        <div class="mft-info-row">
+          <span>Return</span>
+          <strong [class.positive]="profitLoss(selectedInvestment) >= 0" [class.negative]="profitLoss(selectedInvestment) < 0">
+            {{ profitLoss(selectedInvestment) >= 0 ? '+' : '' }}£{{ profitLoss(selectedInvestment) | number:'1.2-2' }}
+            ({{ returnPct(selectedInvestment) | number:'1.2-2' }}%)
+          </strong>
+        </div>
+      </article>
+    </section>
+
+  </ng-container>
+
+  <ng-container *ngIf="mode === 'edit' && selectedInvestment">
+
+    <section class="mft-investments-hero">
+      <div>
+        <button class="mft-top-back-btn" type="button" (click)="showDetail(selectedInvestment)">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+
+        <span class="mft-eyebrow">Edit Investment</span>
+        <h1>{{ selectedInvestment.symbol }}</h1>
+        <p>Update this holding below.</p>
+      </div>
+    </section>
+
+    <section class="mft-form-card single">
+      <h2>Edit investment</h2>
+      <p>Change investment details, quantity, prices, broker or sector.</p>
+
+      <form (ngSubmit)="updateInvestment()">
+        <ng-container *ngTemplateOutlet="investmentForm; context: { model: editForm, prefix: 'edit' }"></ng-container>
+
+        <div class="mft-form-actions">
+          <button class="mft-save-btn" type="submit" [disabled]="submitting">
+            {{ submitting ? 'Saving...' : 'Save Changes' }}
+          </button>
+
+          <button class="mft-cancel-btn" type="button" (click)="showDetail(selectedInvestment)">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+  </ng-container>
+
+  <ng-template #investmentForm let-model="model" let-prefix="prefix">
+    <div class="row g-3">
+      <div class="col-12 col-md-4">
+        <label class="form-label">Type</label>
+        <select class="form-select" [(ngModel)]="model.type" [name]="prefix + 'Type'">
+          <option *ngFor="let type of types" [value]="type">{{ type }}</option>
+        </select>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Symbol</label>
+        <input class="form-control" [(ngModel)]="model.symbol" [name]="prefix + 'Symbol'" required />
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Name</label>
+        <input class="form-control" [(ngModel)]="model.name" [name]="prefix + 'Name'" required />
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Quantity</label>
+        <input type="number" class="form-control" [(ngModel)]="model.quantity" [name]="prefix + 'Quantity'" required />
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Purchase price</label>
+        <input type="number" class="form-control" [(ngModel)]="model.purchase_price" [name]="prefix + 'PurchasePrice'" required />
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Current price</label>
+        <input type="number" class="form-control" [(ngModel)]="model.current_price" [name]="prefix + 'CurrentPrice'" required />
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Currency</label>
+        <select class="form-select" [(ngModel)]="model.currency" [name]="prefix + 'Currency'">
+          <option value="GBP">GBP</option>
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+        </select>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Broker</label>
+        <input class="form-control" [(ngModel)]="model.broker" [name]="prefix + 'Broker'" />
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Sector</label>
+        <input class="form-control" [(ngModel)]="model.sector" [name]="prefix + 'Sector'" placeholder="Example: technology" />
+      </div>
+    </div>
+  </ng-template>
+
+</div>

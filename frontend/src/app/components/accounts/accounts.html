@@ -1,0 +1,329 @@
+<div class="mft-accounts-page">
+
+  <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <!-- LIST VIEW -->
+  <ng-container *ngIf="mode === 'list'">
+
+    <section class="mft-accounts-hero">
+      <div>
+        <span class="mft-eyebrow">Accounts</span>
+        <h1>My Accounts</h1>
+        <p>View account balances, open details, edit accounts and manage your money.</p>
+      </div>
+
+      <button class="mft-hero-btn" type="button" (click)="showAdd()">
+        <i class="bi bi-plus-circle"></i>
+        Add Account
+      </button>
+    </section>
+
+    <div *ngIf="loading" class="mft-loading">
+      <div class="spinner-border text-primary"></div>
+      <p>Loading accounts...</p>
+    </div>
+
+    <ng-container *ngIf="!loading">
+      <section class="mft-stat-grid">
+        <div class="mft-stat-card blue">
+          <p>Total balance</p>
+          <h2>£{{ totalBalance | number:'1.2-2' }}</h2>
+          <span>Across all accounts</span>
+        </div>
+
+        <div class="mft-stat-card green">
+          <p>Accounts</p>
+          <h2>{{ accounts.length }}</h2>
+          <span>Linked accounts</span>
+        </div>
+
+        <div class="mft-stat-card purple">
+          <p>Positive</p>
+          <h2>{{ positiveAccounts }}</h2>
+          <span>Healthy balances</span>
+        </div>
+
+        <div class="mft-stat-card red">
+          <p>Negative</p>
+          <h2>{{ negativeAccounts }}</h2>
+          <span>Needs attention</span>
+        </div>
+      </section>
+
+      <section *ngIf="accounts.length === 0" class="mft-empty">
+        <i class="bi bi-bank"></i>
+        <h3>No accounts yet</h3>
+        <p>Add your first account to start tracking your finances.</p>
+        <button type="button" class="mft-hero-btn" (click)="showAdd()">Add Account</button>
+      </section>
+
+      <section *ngIf="accounts.length > 0" class="mft-account-grid">
+        <article
+          *ngFor="let acc of accounts; trackBy: trackById"
+          class="mft-account-card"
+          tabindex="0"
+          (click)="showDetail(acc)"
+        >
+          <div class="mft-card-top">
+            <div class="mft-icon">
+              <i class="bi" [class]="getAccountIcon(acc.account_type)"></i>
+            </div>
+
+            <span class="mft-pill">{{ acc.account_type }}</span>
+          </div>
+
+          <h3>{{ acc.name }}</h3>
+          <p>{{ acc.bank_name || 'No bank name' }}</p>
+
+          <strong [class.negative]="acc.balance < 0">
+            {{ acc.currency }} {{ acc.balance | number:'1.2-2' }}
+          </strong>
+
+          <div class="mft-card-actions">
+            <button type="button" (click)="showEdit(acc, $event)">
+              <i class="bi bi-pencil"></i>
+              Edit
+            </button>
+
+            <button type="button" class="delete" (click)="deleteAccount(acc, $event)">
+              <i class="bi bi-trash"></i>
+              Delete
+            </button>
+          </div>
+        </article>
+      </section>
+    </ng-container>
+
+  </ng-container>
+
+  <!-- ADD VIEW -->
+  <ng-container *ngIf="mode === 'add'">
+
+    <section class="mft-accounts-hero">
+      <div>
+        <button class="mft-top-back-btn" type="button" (click)="showList()" aria-label="Back to accounts">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+
+        <span class="mft-eyebrow">New Account</span>
+        <h1>Add Account</h1>
+        <p>Create a bank account, savings account, credit card or cash account.</p>
+      </div>
+    </section>
+
+    <section class="mft-form-layout">
+      <article class="mft-preview-card">
+        <div class="mft-icon large">
+          <i class="bi" [class]="getAccountIcon(form.account_type)"></i>
+        </div>
+
+        <p>Preview</p>
+        <h3>{{ form.name || 'Account name' }}</h3>
+        <span>{{ form.bank_name || 'Bank name' }}</span>
+
+        <strong [class.negative]="form.balance < 0">
+          {{ form.currency }} {{ form.balance | number:'1.2-2' }}
+        </strong>
+      </article>
+
+      <article class="mft-form-card">
+        <h2>Account details</h2>
+        <p>Complete the details below. You can edit this later.</p>
+
+        <form (ngSubmit)="createAccount()">
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label class="form-label">Account name</label>
+              <input class="form-control" [(ngModel)]="form.name" name="name" required />
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label class="form-label">Bank name</label>
+              <input class="form-control" [(ngModel)]="form.bank_name" name="bank_name" />
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Type</label>
+              <select class="form-select" [(ngModel)]="form.account_type" name="account_type">
+                <option value="checking">Checking</option>
+                <option value="savings">Savings</option>
+                <option value="credit">Credit</option>
+                <option value="cash">Cash</option>
+              </select>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Balance</label>
+              <input type="number" class="form-control" [(ngModel)]="form.balance" name="balance" />
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Currency</label>
+              <select class="form-select" [(ngModel)]="form.currency" name="currency">
+                <option value="GBP">GBP</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mft-form-actions">
+            <button class="mft-save-btn" type="submit" [disabled]="submitting || !form.name">
+              <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
+              {{ submitting ? 'Saving...' : 'Save Account' }}
+            </button>
+
+            <button class="mft-cancel-btn" type="button" (click)="showList()">Cancel</button>
+          </div>
+        </form>
+      </article>
+    </section>
+
+  </ng-container>
+
+  <!-- DETAIL VIEW -->
+  <ng-container *ngIf="mode === 'detail' && selectedAccount">
+
+    <section class="mft-accounts-hero">
+      <div>
+        <button class="mft-top-back-btn" type="button" (click)="showList()" aria-label="Back to accounts">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+
+        <span class="mft-eyebrow">Account Details</span>
+        <h1>{{ selectedAccount.name }}</h1>
+        <p>{{ selectedAccount.bank_name || 'No bank name' }} · {{ selectedAccount.account_type }}</p>
+      </div>
+
+      <div class="mft-hero-actions">
+        <button class="mft-edit-btn" type="button" (click)="showEdit(selectedAccount)">
+          <i class="bi bi-pencil"></i>
+          Edit
+        </button>
+
+        <button class="mft-delete-btn" type="button" (click)="deleteAccount(selectedAccount)">
+          <i class="bi bi-trash"></i>
+          Delete
+        </button>
+      </div>
+    </section>
+
+    <section class="mft-detail-grid no-balance-card">
+      <article class="mft-detail-card">
+        <h3>Account information</h3>
+
+        <div class="mft-info-row">
+          <span>Name</span>
+          <strong>{{ selectedAccount.name }}</strong>
+        </div>
+
+        <div class="mft-info-row">
+          <span>Bank</span>
+          <strong>{{ selectedAccount.bank_name || 'Not provided' }}</strong>
+        </div>
+
+        <div class="mft-info-row">
+          <span>Type</span>
+          <strong>{{ selectedAccount.account_type }}</strong>
+        </div>
+
+        <div class="mft-info-row">
+          <span>Currency</span>
+          <strong>{{ selectedAccount.currency }}</strong>
+        </div>
+
+        <div class="mft-info-row">
+          <span>Balance</span>
+          <strong [class.negative]="selectedAccount.balance < 0">
+            {{ selectedAccount.currency }} {{ selectedAccount.balance | number:'1.2-2' }}
+          </strong>
+        </div>
+      </article>
+
+      <article class="mft-detail-card mft-balance-summary">
+        <div class="mft-summary-icon">
+          <i class="bi" [class]="getAccountIcon(selectedAccount.account_type)"></i>
+        </div>
+
+        <h3>{{ selectedAccount.name }}</h3>
+        <p>{{ selectedAccount.bank_name || 'No bank name' }}</p>
+
+        <strong [class.negative]="selectedAccount.balance < 0">
+          {{ selectedAccount.currency }} {{ selectedAccount.balance | number:'1.2-2' }}
+        </strong>
+      </article>
+    </section>
+
+  </ng-container>
+
+  <!-- EDIT VIEW -->
+  <ng-container *ngIf="mode === 'edit' && selectedAccount">
+
+    <section class="mft-accounts-hero">
+      <div>
+        <button class="mft-top-back-btn" type="button" (click)="showDetail(selectedAccount)" aria-label="Back to account detail">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+
+        <span class="mft-eyebrow">Edit Account</span>
+        <h1>{{ selectedAccount.name }}</h1>
+        <p>Update the account details below.</p>
+      </div>
+    </section>
+
+    <section class="mft-form-card single">
+      <h2>Edit account</h2>
+      <p>Change name, bank, type, balance or currency.</p>
+
+      <form (ngSubmit)="updateAccount()">
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label">Account name</label>
+            <input class="form-control" [(ngModel)]="editForm.name" name="editName" required />
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label">Bank name</label>
+            <input class="form-control" [(ngModel)]="editForm.bank_name" name="editBank" />
+          </div>
+
+          <div class="col-12 col-md-4">
+            <label class="form-label">Type</label>
+            <select class="form-select" [(ngModel)]="editForm.account_type" name="editType">
+              <option value="checking">Checking</option>
+              <option value="savings">Savings</option>
+              <option value="credit">Credit</option>
+              <option value="cash">Cash</option>
+            </select>
+          </div>
+
+          <div class="col-12 col-md-4">
+            <label class="form-label">Balance</label>
+            <input type="number" class="form-control" [(ngModel)]="editForm.balance" name="editBalance" />
+          </div>
+
+          <div class="col-12 col-md-4">
+            <label class="form-label">Currency</label>
+            <select class="form-select" [(ngModel)]="editForm.currency" name="editCurrency">
+              <option value="GBP">GBP</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mft-form-actions">
+          <button class="mft-save-btn" type="submit" [disabled]="submitting || !editForm.name">
+            <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
+            {{ submitting ? 'Saving...' : 'Save Changes' }}
+          </button>
+
+          <button class="mft-cancel-btn" type="button" (click)="showDetail(selectedAccount)">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+  </ng-container>
+
+</div>

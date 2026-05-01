@@ -1,0 +1,244 @@
+.mft-profile-page {
+  width: 100% !important;
+}
+
+.mft-profile-hero {
+  width: 100% !important;
+  border-radius: 30px !important;
+  padding: 32px !important;
+  margin-bottom: 24px !important;
+  color: #fff !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 22px !important;
+  background: linear-gradient(135deg, #111827, #2563eb 58%, #7c3aed) !important;
+  box-shadow: 0 24px 65px rgba(37, 99, 235, 0.22) !important;
+}
+
+.mft-eyebrow {
+  display: block !important;
+  font-size: 0.76rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  color: rgba(255,255,255,0.78) !important;
+}
+
+.mft-profile-hero h1 {
+  margin: 8px 0 !important;
+  font-size: clamp(2rem, 4vw, 3.2rem) !important;
+  font-weight: 950 !important;
+  color: white !important;
+}
+
+.mft-profile-hero p {
+  margin: 0 !important;
+  color: rgba(255,255,255,0.76) !important;
+}
+
+.mft-logout-btn,
+.mft-edit-btn,
+.mft-password-btn,
+.mft-save-btn,
+.mft-cancel-btn,
+.mft-logout-light-btn,
+.mft-delete-light-btn {
+  border: 0 !important;
+  border-radius: 16px !important;
+  padding: 12px 16px !important;
+  font-weight: 850 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+
+.mft-logout-btn {
+  background: #dc2626 !important;
+  color: white !important;
+}
+
+.mft-profile-layout {
+  display: grid !important;
+  grid-template-columns: 360px minmax(0, 1fr) !important;
+  gap: 20px !important;
+  align-items: start !important;
+}
+
+.mft-profile-card,
+.mft-details-card {
+  background: white !important;
+  border-radius: 28px !important;
+  padding: 28px !important;
+  box-shadow: 0 18px 45px rgba(15,23,42,0.08) !important;
+}
+
+.mft-profile-card {
+  text-align: center !important;
+}
+
+.mft-avatar {
+  width: 108px !important;
+  height: 108px !important;
+  border-radius: 32px !important;
+  margin: 0 auto 18px auto !important;
+  display: grid !important;
+  place-items: center !important;
+  color: white !important;
+  font-size: 2.2rem !important;
+  font-weight: 950 !important;
+  background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
+  box-shadow: 0 18px 42px rgba(37,99,235,0.28) !important;
+}
+
+.mft-profile-card h2 {
+  margin: 0 !important;
+  font-size: 1.5rem !important;
+  font-weight: 950 !important;
+  color: #0f172a !important;
+}
+
+.mft-profile-card p {
+  margin: 8px 0 14px !important;
+  color: #64748b !important;
+  word-break: break-word !important;
+}
+
+.mft-role-pill {
+  display: inline-flex !important;
+  border-radius: 999px !important;
+  padding: 7px 12px !important;
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  font-size: 0.8rem !important;
+  font-weight: 900 !important;
+}
+
+.mft-profile-actions {
+  display: grid !important;
+  gap: 10px !important;
+  margin-top: 24px !important;
+}
+
+.mft-edit-btn {
+  color: white !important;
+  background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
+}
+
+.mft-password-btn {
+  color: #7c3aed !important;
+  background: #f5f3ff !important;
+}
+
+.mft-logout-light-btn {
+  color: #2563eb !important;
+  background: #eff6ff !important;
+}
+
+.mft-delete-light-btn {
+  color: #dc2626 !important;
+  background: #fef2f2 !important;
+}
+
+.mft-card-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 18px !important;
+}
+
+.mft-card-header h3 {
+  margin: 0 !important;
+  font-size: 1.35rem !important;
+  font-weight: 950 !important;
+  color: #0f172a !important;
+}
+
+.mft-card-header p {
+  margin: 4px 0 0 !important;
+  color: #64748b !important;
+}
+
+.mft-info-row {
+  display: grid !important;
+  grid-template-columns: 180px minmax(0, 1fr) !important;
+  gap: 18px !important;
+  padding: 16px 0 !important;
+  border-bottom: 1px solid #eef2f7 !important;
+}
+
+.mft-info-row span {
+  color: #64748b !important;
+  font-weight: 750 !important;
+}
+
+.mft-info-row strong {
+  color: #0f172a !important;
+  font-weight: 900 !important;
+  text-align: right !important;
+  word-break: break-word !important;
+}
+
+.form-label {
+  font-weight: 800 !important;
+  color: #334155 !important;
+  font-size: 0.84rem !important;
+}
+
+.form-control {
+  border-radius: 14px !important;
+  padding: 0.72rem 0.85rem !important;
+  border: 1px solid #dbe3ef !important;
+}
+
+.form-control:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 0.2rem rgba(37,99,235,0.12) !important;
+}
+
+.mft-form-actions {
+  display: flex !important;
+  gap: 10px !important;
+  margin-top: 22px !important;
+}
+
+.mft-save-btn {
+  color: white !important;
+  background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
+}
+
+.mft-cancel-btn {
+  color: #0f172a !important;
+  background: #f1f5f9 !important;
+}
+
+@media (max-width: 1000px) {
+  .mft-profile-layout {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .mft-profile-hero {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .mft-profile-hero > div:first-child {
+    max-width: 100% !important;
+  }
+
+  .mft-info-row {
+    grid-template-columns: 1fr !important;
+    gap: 4px !important;
+  }
+
+  .mft-info-row strong {
+    text-align: left !important;
+  }
+
+  .mft-form-actions {
+    flex-direction: column !important;
+  }
+}

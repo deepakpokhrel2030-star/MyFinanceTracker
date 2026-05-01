@@ -1,0 +1,113 @@
+<div class="mft-auth-page">
+
+  <section class="mft-auth-left">
+    <div class="mft-brand">
+      <div class="mft-logo">
+        <i class="bi bi-wallet2"></i>
+      </div>
+      <span>FinanceTracker</span>
+    </div>
+
+    <div class="mft-auth-copy">
+      <span class="mft-eyebrow">Start tracking today</span>
+      <h1>Build better money habits from day one.</h1>
+      <p>
+        Create an account to organise balances, budgets, savings goals,
+        transactions and investments with a modern personal finance dashboard.
+      </p>
+
+      <div class="mft-feature-grid">
+        <div>
+          <i class="bi bi-shield-check"></i>
+          <strong>Secure access</strong>
+          <span>Your own account space</span>
+        </div>
+
+        <div>
+          <i class="bi bi-speedometer2"></i>
+          <strong>Dashboard</strong>
+          <span>Quick money overview</span>
+        </div>
+
+        <div>
+          <i class="bi bi-piggy-bank"></i>
+          <strong>Savings goals</strong>
+          <span>Track progress</span>
+        </div>
+
+        <div>
+          <i class="bi bi-bar-chart"></i>
+          <strong>Insights</strong>
+          <span>Visual finance data</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mft-auth-right">
+    <article class="mft-auth-card">
+      <div class="mft-auth-card-header">
+        <h2>Create account</h2>
+        <p>Join FinanceTracker and start managing your money.</p>
+      </div>
+
+      <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+      <form (ngSubmit)="register()">
+        <div class="mb-3">
+          <label class="form-label">Full name</label>
+          <input
+            class="form-control"
+            [(ngModel)]="form.name"
+            name="name"
+            placeholder="Your name"
+            required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Email address</label>
+          <input
+            type="email"
+            class="form-control"
+            [(ngModel)]="form.email"
+            name="email"
+            placeholder="you@example.com"
+            required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            [(ngModel)]="form.password"
+            name="password"
+            placeholder="Create password"
+            required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Confirm password</label>
+          <input
+            type="password"
+            class="form-control"
+            [(ngModel)]="form.confirmPassword"
+            name="confirmPassword"
+            placeholder="Confirm password"
+            required>
+        </div>
+
+        <button class="mft-auth-btn" type="submit" [disabled]="loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+          {{ loading ? 'Creating account...' : 'Create Account' }}
+        </button>
+      </form>
+
+      <p class="mft-auth-switch">
+        Already have an account?
+        <a routerLink="/login">Login</a>
+      </p>
+    </article>
+  </section>
+
+</div>

@@ -1,0 +1,287 @@
+<div class="mft-budgets-page">
+
+  <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <ng-container *ngIf="mode === 'list'">
+
+    <section class="mft-budgets-hero">
+      <div>
+        <span class="mft-eyebrow">Budgets</span>
+        <h1>Budgets</h1>
+        <p>Create monthly spending limits, track category plans and manage your budget strategy.</p>
+      </div>
+
+      <button class="mft-hero-btn" type="button" (click)="showAdd()">
+        <i class="bi bi-plus-circle"></i>
+        Add Budget
+      </button>
+    </section>
+
+    <div *ngIf="loading" class="mft-loading">
+      <div class="spinner-border text-primary"></div>
+      <p>Loading budgets...</p>
+    </div>
+
+    <ng-container *ngIf="!loading">
+
+      <section class="mft-stat-grid">
+        <div class="mft-stat-card green">
+          <p>Total budget</p>
+          <h2>£{{ totalBudget | number:'1.2-2' }}</h2>
+          <span>All visible budgets</span>
+        </div>
+
+        <div class="mft-stat-card red">
+          <p>Budgets</p>
+          <h2>{{ budgets.length }}</h2>
+          <span>Total records</span>
+        </div>
+
+        <div class="mft-stat-card blue">
+          <p>Average</p>
+          <h2>£{{ averageBudget | number:'1.2-2' }}</h2>
+          <span>Per budget</span>
+        </div>
+
+        <div class="mft-stat-card purple">
+          <p>Highest</p>
+          <h2>{{ highestBudget?.category || '—' }}</h2>
+          <span>Largest category</span>
+        </div>
+      </section>
+
+      <section class="mft-filter-panel">
+        <div class="mft-filter-grid">
+          <div class="mft-filter-field">
+            <label>Month</label>
+            <input type="month" class="form-control" [(ngModel)]="selectedMonth" name="selectedMonth" />
+          </div>
+
+          <div class="mft-filter-field">
+            <label>Category</label>
+            <select class="form-select" [(ngModel)]="selectedCategory" name="selectedCategory">
+              <option value="">All categories</option>
+              <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+            </select>
+          </div>
+
+          <div class="mft-filter-buttons">
+            <button class="mft-save-btn" type="button" (click)="applyFilters()">Apply</button>
+            <button class="mft-cancel-btn" type="button" (click)="resetFilters()">Reset</button>
+          </div>
+        </div>
+      </section>
+
+      <section *ngIf="budgets.length === 0" class="mft-empty">
+        <i class="bi bi-pie-chart"></i>
+        <h3>No budgets found</h3>
+        <p>Create a monthly budget to start controlling your spending.</p>
+        <button type="button" class="mft-hero-btn" (click)="showAdd()">Add Budget</button>
+      </section>
+
+      <section *ngIf="budgets.length > 0" class="mft-budget-grid">
+        <article
+          *ngFor="let budget of pagedBudgets"
+          class="mft-budget-card"
+          (click)="showDetail(budget)"
+          tabindex="0"
+        >
+          <div class="mft-budget-top">
+            <div class="mft-budget-icon">
+              <i class="bi" [class]="getBudgetIcon(budget.category)"></i>
+            </div>
+
+            <span class="mft-month-pill">{{ budget.month }}</span>
+          </div>
+
+          <h3>{{ budget.category }}</h3>
+          <p>Monthly budget limit</p>
+
+          <strong>£{{ budget.limit | number:'1.2-2' }}</strong>
+
+          <div class="mft-meter">
+            <span [style.width.%]="budgetWidth(budget.limit)"></span>
+          </div>
+
+          <div class="mft-card-actions">
+            <button type="button" (click)="showEdit(budget, $event)">
+              <i class="bi bi-pencil"></i>
+              Edit
+            </button>
+
+            <button type="button" class="delete" (click)="deleteBudget(budget, $event)">
+              <i class="bi bi-trash"></i>
+              Delete
+            </button>
+          </div>
+        </article>
+      </section>
+
+      <div *ngIf="budgets.length > 0" class="mft-pagination">
+        <button type="button" (click)="prevPage()" [disabled]="currentPage <= 1">Previous</button>
+        <span>Page {{ currentPage }} of {{ totalPages }}</span>
+        <button type="button" (click)="nextPage()" [disabled]="currentPage >= totalPages">Next</button>
+      </div>
+
+    </ng-container>
+
+  </ng-container>
+
+  <ng-container *ngIf="mode === 'add'">
+
+    <section class="mft-budgets-hero">
+      <div>
+        <button class="mft-top-back-btn" type="button" (click)="showList()">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+
+        <span class="mft-eyebrow">New Budget</span>
+        <h1>Add Budget</h1>
+        <p>Create a category limit for a selected month.</p>
+      </div>
+    </section>
+
+    <section class="mft-form-layout">
+      <article class="mft-preview-card">
+        <div class="mft-budget-icon large">
+          <i class="bi" [class]="getBudgetIcon(form.category)"></i>
+        </div>
+
+        <p>Preview</p>
+        <h3>{{ form.category || 'Category' }}</h3>
+        <span>{{ form.month }}</span>
+        <strong>£{{ form.limit | number:'1.2-2' }}</strong>
+      </article>
+
+      <article class="mft-form-card">
+        <h2>Budget details</h2>
+        <p>Set a monthly limit for a category.</p>
+
+        <form (ngSubmit)="createBudget()">
+          <div class="row g-3">
+            <div class="col-12 col-md-4">
+              <label class="form-label">Category</label>
+              <select class="form-select" [(ngModel)]="form.category" name="category" required>
+                <option value="">Select category</option>
+                <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+              </select>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Budget limit</label>
+              <input type="number" class="form-control" [(ngModel)]="form.limit" name="limit" required />
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">Month</label>
+              <input type="month" class="form-control" [(ngModel)]="form.month" name="month" required />
+            </div>
+          </div>
+
+          <div class="mft-form-actions">
+            <button class="mft-save-btn" type="submit">{{ submitting ? 'Saving...' : 'Save Budget' }}</button>
+            <button class="mft-cancel-btn" type="button" (click)="showList()">Cancel</button>
+          </div>
+        </form>
+      </article>
+    </section>
+
+  </ng-container>
+
+  <ng-container *ngIf="mode === 'detail' && selectedBudget">
+
+    <section class="mft-budgets-hero">
+      <div>
+        <button class="mft-top-back-btn" type="button" (click)="showList()">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+
+        <span class="mft-eyebrow">Budget Details</span>
+        <h1>{{ selectedBudget.category }}</h1>
+        <p>{{ selectedBudget.month }} · Monthly spending plan</p>
+      </div>
+
+      <div class="mft-hero-actions">
+        <button class="mft-edit-btn" type="button" (click)="showEdit(selectedBudget)">
+          <i class="bi bi-pencil"></i>
+          Edit
+        </button>
+
+        <button class="mft-delete-btn" type="button" (click)="deleteBudget(selectedBudget)">
+          <i class="bi bi-trash"></i>
+          Delete
+        </button>
+      </div>
+    </section>
+
+    <section class="mft-detail-grid">
+      <article class="mft-detail-card">
+        <h3>Budget information</h3>
+
+        <div class="mft-info-row"><span>Category</span><strong>{{ selectedBudget.category }}</strong></div>
+        <div class="mft-info-row"><span>Month</span><strong>{{ selectedBudget.month }}</strong></div>
+        <div class="mft-info-row"><span>Limit</span><strong>£{{ selectedBudget.limit | number:'1.2-2' }}</strong></div>
+      </article>
+
+      <article class="mft-detail-card mft-summary-card">
+        <div class="mft-budget-icon large">
+          <i class="bi" [class]="getBudgetIcon(selectedBudget.category)"></i>
+        </div>
+
+        <h3>{{ selectedBudget.category }}</h3>
+        <p>Monthly budget limit</p>
+        <strong>£{{ selectedBudget.limit | number:'1.2-2' }}</strong>
+      </article>
+    </section>
+
+  </ng-container>
+
+  <ng-container *ngIf="mode === 'edit' && selectedBudget">
+
+    <section class="mft-budgets-hero">
+      <div>
+        <button class="mft-top-back-btn" type="button" (click)="showDetail(selectedBudget)">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+
+        <span class="mft-eyebrow">Edit Budget</span>
+        <h1>{{ selectedBudget.category }}</h1>
+        <p>Update this budget below.</p>
+      </div>
+    </section>
+
+    <section class="mft-form-card single">
+      <h2>Edit budget</h2>
+
+      <form (ngSubmit)="updateBudget()">
+        <div class="row g-3">
+          <div class="col-12 col-md-4">
+            <label class="form-label">Category</label>
+            <select class="form-select" [(ngModel)]="editForm.category" name="editCategory" required>
+              <option value="">Select category</option>
+              <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+            </select>
+          </div>
+
+          <div class="col-12 col-md-4">
+            <label class="form-label">Budget limit</label>
+            <input type="number" class="form-control" [(ngModel)]="editForm.limit" name="editLimit" required />
+          </div>
+
+          <div class="col-12 col-md-4">
+            <label class="form-label">Month</label>
+            <input type="month" class="form-control" [(ngModel)]="editForm.month" name="editMonth" required />
+          </div>
+        </div>
+
+        <div class="mft-form-actions">
+          <button class="mft-save-btn" type="submit">{{ submitting ? 'Saving...' : 'Save Changes' }}</button>
+          <button class="mft-cancel-btn" type="button" (click)="showDetail(selectedBudget)">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+  </ng-container>
+
+</div>

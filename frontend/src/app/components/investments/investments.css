@@ -1,0 +1,557 @@
+.mft-investments-page {
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.mft-investments-hero {
+  width: 100% !important;
+  min-height: 205px !important;
+  border-radius: 30px !important;
+  padding: 34px !important;
+  margin: 0 0 24px 0 !important;
+  color: #fff !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 22px !important;
+  background: linear-gradient(135deg, #111827, #2563eb 58%, #06b6d4) !important;
+  box-shadow: 0 24px 65px rgba(37, 99, 235, 0.22) !important;
+  overflow: hidden !important;
+}
+
+.mft-investments-hero > div:first-child {
+  min-width: 0 !important;
+  max-width: 72% !important;
+}
+
+.mft-eyebrow {
+  display: block !important;
+  margin-bottom: 10px !important;
+  font-size: 0.74rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  color: rgba(255,255,255,0.78) !important;
+}
+
+.mft-investments-hero h1 {
+  margin: 8px 0 14px !important;
+  font-size: clamp(3rem, 4vw, 4.2rem) !important;
+  line-height: 1 !important;
+  font-weight: 760 !important;
+  letter-spacing: -0.025em !important;
+  color: #fff !important;
+}
+
+.mft-investments-hero p {
+  margin: 0 !important;
+  color: rgba(255,255,255,0.78) !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+}
+
+.mft-hero-btn,
+.mft-edit-btn,
+.mft-delete-btn,
+.mft-save-btn,
+.mft-cancel-btn,
+.mft-card-actions button,
+.mft-pagination button {
+  border: 0 !important;
+  border-radius: 16px !important;
+  padding: 12px 16px !important;
+  font-weight: 850 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  line-height: 1 !important;
+}
+
+.mft-hero-btn,
+.mft-edit-btn {
+  background: white !important;
+  color: #0f172a !important;
+  box-shadow: 0 14px 28px rgba(15,23,42,0.12) !important;
+}
+
+.mft-delete-btn,
+.mft-card-actions button.delete {
+  background: #dc2626 !important;
+  color: white !important;
+}
+
+.mft-save-btn {
+  color: white !important;
+  background: linear-gradient(135deg, #2563eb, #06b6d4) !important;
+  min-height: 52px !important;
+}
+
+.mft-cancel-btn {
+  color: #0f172a !important;
+  background: #f1f5f9 !important;
+  min-height: 52px !important;
+}
+
+.mft-top-back-btn {
+  border: 1px solid rgba(255,255,255,0.22) !important;
+  background: rgba(255,255,255,0.10) !important;
+  color: white !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-bottom: 16px !important;
+}
+
+.mft-hero-actions,
+.mft-filter-buttons,
+.mft-form-actions {
+  display: flex !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+}
+
+.mft-stat-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 18px !important;
+  margin-bottom: 24px !important;
+}
+
+.mft-stat-card {
+  color: white !important;
+  min-height: 150px !important;
+  border-radius: 28px !important;
+  padding: 26px !important;
+  box-shadow: 0 18px 45px rgba(15,23,42,0.08) !important;
+}
+
+.mft-stat-card.blue {
+  background: linear-gradient(135deg, #2563eb, #06b6d4) !important;
+}
+
+.mft-stat-card.green {
+  background: linear-gradient(135deg, #16a34a, #22c55e) !important;
+}
+
+.mft-stat-card.red {
+  background: linear-gradient(135deg, #dc2626, #fb7185) !important;
+}
+
+.mft-stat-card.purple {
+  background: linear-gradient(135deg, #7c3aed, #a855f7) !important;
+}
+
+.mft-stat-card p,
+.mft-stat-card span {
+  margin: 0 !important;
+  color: rgba(255,255,255,0.78) !important;
+  font-weight: 500 !important;
+}
+
+.mft-stat-card h2 {
+  color: white !important;
+  margin: 10px 0 !important;
+  font-size: clamp(2rem, 2.8vw, 2.8rem) !important;
+  font-weight: 760 !important;
+  letter-spacing: -0.025em !important;
+  line-height: 1.05 !important;
+}
+
+.mft-filter-panel {
+  max-width: 1180px !important;
+  margin: 0 auto 24px auto !important;
+  background: #fff !important;
+  border-radius: 28px !important;
+  padding: 24px !important;
+  box-shadow: 0 18px 45px rgba(15,23,42,0.08) !important;
+}
+
+.mft-filter-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr auto !important;
+  gap: 14px !important;
+  align-items: end !important;
+}
+
+.mft-filter-field label,
+.form-label {
+  display: block !important;
+  margin-bottom: 6px !important;
+  font-size: 0.78rem !important;
+  font-weight: 650 !important;
+  color: #64748b !important;
+}
+
+.form-control,
+.form-select {
+  width: 100% !important;
+  min-height: 52px !important;
+  border-radius: 14px !important;
+  padding: 0.72rem 0.85rem !important;
+  border: 1px solid #dbe3ef !important;
+  background-color: #fff !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.12) !important;
+}
+
+.mft-investment-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 18px !important;
+}
+
+.mft-investment-card,
+.mft-preview-card,
+.mft-form-card,
+.mft-detail-card,
+.mft-loading,
+.mft-empty {
+  background: #fff !important;
+  border-radius: 28px !important;
+  padding: 24px !important;
+  box-shadow: 0 18px 45px rgba(15,23,42,0.08) !important;
+}
+
+.mft-investment-card {
+  cursor: pointer !important;
+  transition: 0.22s ease !important;
+  min-height: 300px !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.mft-investment-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 26px 60px rgba(15,23,42,0.14) !important;
+}
+
+.mft-investment-top {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 34px !important;
+}
+
+.mft-investment-icon {
+  width: 58px !important;
+  height: 58px !important;
+  border-radius: 18px !important;
+  display: grid !important;
+  place-items: center !important;
+  color: white !important;
+  font-size: 1.45rem !important;
+  background: linear-gradient(135deg, #2563eb, #06b6d4) !important;
+  flex-shrink: 0 !important;
+}
+
+.mft-investment-icon.large {
+  width: 74px !important;
+  height: 74px !important;
+  border-radius: 24px !important;
+  font-size: 1.8rem !important;
+}
+
+.mft-type-pill {
+  border-radius: 999px !important;
+  padding: 7px 11px !important;
+  background: #eef6ff !important;
+  color: #2563eb !important;
+  font-size: 0.76rem !important;
+  font-weight: 760 !important;
+  text-transform: capitalize !important;
+}
+
+.mft-investment-card h3 {
+  margin: 0 0 10px !important;
+  color: #0f172a !important;
+  font-size: 1.35rem !important;
+  font-weight: 760 !important;
+  letter-spacing: -0.015em !important;
+  text-transform: uppercase !important;
+}
+
+.mft-investment-card p {
+  margin: 0 0 24px !important;
+  color: #64748b !important;
+  font-size: 0.95rem !important;
+  font-weight: 500 !important;
+}
+
+.mft-value-row {
+  margin-top: auto !important;
+}
+
+.mft-value-row span {
+  display: block !important;
+  color: #64748b !important;
+  font-size: 0.85rem !important;
+  font-weight: 650 !important;
+  margin-bottom: 8px !important;
+}
+
+.mft-value-row strong,
+.mft-preview-card strong,
+.mft-summary-card strong {
+  display: block !important;
+  color: #0f172a !important;
+  font-size: 1.55rem !important;
+  font-weight: 760 !important;
+}
+
+.mft-meter {
+  height: 11px !important;
+  border-radius: 999px !important;
+  background: #e2e8f0 !important;
+  overflow: hidden !important;
+  margin-top: 14px !important;
+}
+
+.mft-meter span {
+  display: block !important;
+  height: 100% !important;
+  background: linear-gradient(90deg, #2563eb, #06b6d4) !important;
+}
+
+.mft-return-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  margin-top: 14px !important;
+  font-weight: 760 !important;
+}
+
+.positive {
+  color: #16a34a !important;
+}
+
+.negative {
+  color: #dc2626 !important;
+}
+
+.mft-card-actions {
+  display: flex !important;
+  gap: 10px !important;
+  margin-top: 22px !important;
+}
+
+.mft-card-actions button {
+  flex: 1 !important;
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  padding: 12px !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+  font-weight: 760 !important;
+}
+
+.mft-card-actions button.delete {
+  color: white !important;
+  background: #dc2626 !important;
+}
+
+.mft-pagination {
+  margin-top: 24px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+.mft-pagination span {
+  color: #64748b !important;
+  font-weight: 700 !important;
+}
+
+.mft-pagination button {
+  background: white !important;
+  color: #0f172a !important;
+  box-shadow: 0 12px 28px rgba(15,23,42,0.08) !important;
+  font-weight: 760 !important;
+}
+
+.mft-pagination button:disabled {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+}
+
+.mft-form-layout {
+  display: grid !important;
+  grid-template-columns: 360px 1fr !important;
+  gap: 24px !important;
+  align-items: start !important;
+}
+
+.mft-preview-card {
+  text-align: center !important;
+}
+
+.mft-preview-card .mft-investment-icon {
+  margin: 0 auto 18px auto !important;
+}
+
+.mft-preview-card p {
+  color: #64748b !important;
+  font-weight: 650 !important;
+  margin: 0 0 8px !important;
+}
+
+.mft-preview-card h3,
+.mft-form-card h2,
+.mft-detail-card h3 {
+  color: #0f172a !important;
+  font-size: 1.35rem !important;
+  font-weight: 760 !important;
+}
+
+.mft-preview-card h3 {
+  margin: 0 0 8px !important;
+}
+
+.mft-preview-card span {
+  display: inline-block !important;
+  color: #2563eb !important;
+  background: #eef6ff !important;
+  border-radius: 999px !important;
+  padding: 6px 12px !important;
+  font-weight: 760 !important;
+  margin-bottom: 18px !important;
+}
+
+.mft-form-card h2 {
+  margin: 0 0 8px !important;
+}
+
+.mft-form-card > p,
+.mft-detail-card p {
+  margin: 0 0 22px !important;
+  color: #64748b !important;
+  font-weight: 500 !important;
+}
+
+.mft-form-actions {
+  margin-top: 22px !important;
+}
+
+.mft-form-card.single {
+  max-width: 1100px !important;
+  margin: 0 auto !important;
+}
+
+.mft-detail-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 24px !important;
+}
+
+.mft-info-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  padding: 16px 0 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.mft-info-row:last-child {
+  border-bottom: 0 !important;
+}
+
+.mft-info-row span {
+  color: #64748b !important;
+  font-weight: 650 !important;
+}
+
+.mft-info-row strong {
+  color: #0f172a !important;
+  font-weight: 760 !important;
+  text-align: right !important;
+}
+
+.mft-summary-card {
+  text-align: center !important;
+}
+
+.mft-summary-card .mft-investment-icon {
+  margin: 0 auto 18px auto !important;
+}
+
+.mft-summary-card strong {
+  display: block !important;
+  color: #0f172a !important;
+  font-size: 2rem !important;
+  font-weight: 760 !important;
+}
+
+.mft-loading,
+.mft-empty {
+  text-align: center !important;
+  padding: 54px !important;
+}
+
+.mft-loading p,
+.mft-empty p {
+  color: #64748b !important;
+  margin-top: 10px !important;
+}
+
+.mft-empty i {
+  font-size: 2.5rem !important;
+  color: #2563eb !important;
+}
+
+.mft-empty h3 {
+  margin-top: 14px !important;
+  font-weight: 760 !important;
+  color: #0f172a !important;
+}
+
+@media (max-width: 1100px) {
+  .mft-stat-grid,
+  .mft-investment-grid,
+  .mft-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .mft-form-layout {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 800px) {
+  .mft-filter-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .mft-filter-buttons {
+    justify-content: flex-start !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .mft-investments-hero {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .mft-investments-hero > div:first-child {
+    max-width: 100% !important;
+  }
+
+  .mft-stat-grid,
+  .mft-investment-grid,
+  .mft-detail-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

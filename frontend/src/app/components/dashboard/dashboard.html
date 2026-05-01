@@ -1,0 +1,208 @@
+<div class="dashboard-page">
+
+  <section class="dashboard-hero" routerLink="/analytics">
+    <div>
+      <span class="eyebrow">MyFinanceTracker</span>
+      <h1>Good day, {{ user?.name || 'User' }} 👋</h1>
+      <p>Your clean financial overview for balances, spending, income, savings and investments.</p>
+    </div>
+
+    <div class="hero-summary">
+      <span>Net cashflow</span>
+      <strong [class.negative]="netCashflow < 0">
+        {{ netCashflow >= 0 ? '+' : '' }}£{{ netCashflow | number:'1.2-2' }}
+      </strong>
+      <small>Open analytics</small>
+    </div>
+  </section>
+
+  <div *ngIf="loading" class="loading-card">
+    <div class="spinner-border text-primary"></div>
+    <p>Loading your financial dashboard...</p>
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <section class="stat-grid">
+      <article class="stat-card blue" routerLink="/accounts">
+        <p>Total balance</p>
+        <h2>£{{ totalBalance | number:'1.2-2' }}</h2>
+        <span>{{ accounts.length }} account(s)</span>
+      </article>
+
+      <article class="stat-card green" routerLink="/transactions">
+        <p>Total income</p>
+        <h2>£{{ totalIncome | number:'1.2-2' }}</h2>
+        <span>Open transactions</span>
+      </article>
+
+      <article class="stat-card red" routerLink="/transactions">
+        <p>Total expenses</p>
+        <h2>£{{ totalExpense | number:'1.2-2' }}</h2>
+        <span>Review spending</span>
+      </article>
+
+      <article class="stat-card purple" routerLink="/investments">
+        <p>Portfolio value</p>
+        <h2>£{{ portfolioValueTotal | number:'1.2-2' }}</h2>
+        <span [class.good]="portfolioProfitLoss >= 0" [class.bad]="portfolioProfitLoss < 0">
+          {{ portfolioProfitLoss >= 0 ? '+' : '' }}£{{ portfolioProfitLoss | number:'1.2-2' }} P&L
+        </span>
+      </article>
+    </section>
+
+    <section class="dashboard-grid">
+
+      <article class="panel chart-panel" routerLink="/transactions">
+        <div class="panel-header">
+          <div>
+            <h3>Cashflow snapshot</h3>
+            <p>Latest monthly income and expenses</p>
+          </div>
+
+          <a routerLink="/transactions" (click)="$event.stopPropagation()">View transactions</a>
+        </div>
+
+        <div *ngIf="monthlyData.length === 0" class="empty-state">
+          <i class="bi bi-bar-chart"></i>
+          <p>No monthly data yet</p>
+        </div>
+
+        <div *ngIf="monthlyData.length > 0" class="cashflow-chart">
+          <div *ngFor="let m of monthlyData.slice(-6); trackBy: trackByMonth" class="month-group">
+            <div class="bar-area">
+              <div class="bar-wrap">
+                <small>£{{ m.income | number:'1.0-0' }}</small>
+                <span class="income-bar" [style.height.%]="barHeight(m.income)"></span>
+              </div>
+
+              <div class="bar-wrap">
+                <small>£{{ expenseValue(m) | number:'1.0-0' }}</small>
+                <span class="expense-bar" [style.height.%]="barHeight(expenseValue(m))"></span>
+              </div>
+            </div>
+
+            <strong>{{ monthLabel(m) }}</strong>
+          </div>
+        </div>
+
+        <div class="legend">
+          <span><i class="income-dot"></i>Income</span>
+          <span><i class="expense-dot"></i>Expenses</span>
+        </div>
+      </article>
+
+      <section class="insight-grid">
+
+        <article class="panel" routerLink="/accounts">
+          <div class="panel-header">
+            <div>
+              <h3>Account balances</h3>
+              <p>Your top accounts</p>
+            </div>
+
+            <a routerLink="/accounts" (click)="$event.stopPropagation()">Manage</a>
+          </div>
+
+          <div *ngIf="accounts.length === 0" class="empty-state small">
+            <i class="bi bi-bank"></i>
+            <p>No accounts found</p>
+          </div>
+
+          <div *ngFor="let acc of accounts.slice(0,5); trackBy: trackById" class="progress-row">
+            <div class="progress-label">
+              <div>
+                <strong>{{ acc.name }}</strong>
+                <small>{{ acc.bank_name || acc.account_type }}</small>
+              </div>
+
+              <span [class.negative]="acc.balance < 0">
+                {{ acc.currency }} {{ acc.balance | number:'1.2-2' }}
+              </span>
+            </div>
+
+            <div class="track">
+              <div
+                [class.danger-track]="acc.balance < 0"
+                [style.width.%]="accountWidth(acc.balance)">
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel" routerLink="/transactions">
+          <div class="panel-header">
+            <div>
+              <h3>Top spending</h3>
+              <p>Largest expense categories</p>
+            </div>
+
+            <a routerLink="/transactions" (click)="$event.stopPropagation()">View all</a>
+          </div>
+
+          <div *ngIf="topCategories.length === 0" class="empty-state small">
+            <i class="bi bi-pie-chart"></i>
+            <p>No spending data yet</p>
+          </div>
+
+          <div *ngFor="let cat of topCategories.slice(0,5); let i = index; trackBy: trackByCategory" class="progress-row">
+            <div class="progress-label">
+              <div class="category-title">
+                <b>{{ i + 1 }}</b>
+                <strong>{{ cat.category }}</strong>
+              </div>
+
+              <span>£{{ cat.total | number:'1.2-2' }}</span>
+            </div>
+
+            <div class="track">
+              <div [style.width.%]="categoryWidth(cat.total)"></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel" routerLink="/analytics">
+          <div class="panel-header">
+            <div>
+              <h3>Financial health</h3>
+              <p>Quick dashboard indicators</p>
+            </div>
+
+            <a routerLink="/analytics" (click)="$event.stopPropagation()">View analytics</a>
+          </div>
+
+          <div class="saving-mini">
+            <strong>{{ savingsRate | number:'1.0-0' }}%</strong>
+            <div class="track">
+              <div class="saving-track" [style.width.%]="savingsRate"></div>
+            </div>
+            <span>Estimated savings rate</span>
+          </div>
+        </article>
+
+        <article class="panel" routerLink="/investments">
+          <div class="panel-header">
+            <div>
+              <h3>Portfolio summary</h3>
+              <p>Investment performance</p>
+            </div>
+
+            <a routerLink="/investments" (click)="$event.stopPropagation()">View portfolio</a>
+          </div>
+
+          <div class="mini-value">
+            <span>Portfolio value</span>
+            <strong>£{{ portfolioValueTotal | number:'1.2-2' }}</strong>
+            <small [class.good-text]="portfolioProfitLoss >= 0" [class.bad-text]="portfolioProfitLoss < 0">
+              {{ portfolioProfitLoss >= 0 ? '+' : '' }}£{{ portfolioProfitLoss | number:'1.2-2' }} profit/loss
+            </small>
+          </div>
+        </article>
+
+      </section>
+
+    </section>
+
+  </ng-container>
+
+</div>
